@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace Cold_Waters_Expanded
 {
-    public class ObjImporter
+    public static class ObjImporter
     {
-        List<Mesh> meshes = new List<Mesh>();
-        float conversionFactor = 3.2808f / 225.39f;
+        static float conversionFactor = 3.2808f / 225.39f;
 
-        public ObjImporter( string path ) {
+        public static Mesh[] GetMeshes( string path ) {
+            List<Mesh> meshes = new List<Mesh>();
             List<Vector3> vertsLibrary = new List<Vector3>();
             List<Vector3> normsLibrary = new List<Vector3>();
             List<Vector2> uvsLibrary = new List<Vector2>();
@@ -46,8 +46,7 @@ namespace Cold_Waters_Expanded
                         List<int> tris = new List<int>();
                         int index = 0;
                         bool exported = false;
-                        for( int j = i + 2; j < allLines.Length; j++ ) {
-                            //Debug.Log( "Line: " + (j + 1) );
+                        for( int j = i + 1; j < allLines.Length; j++ ) {
                             if( exported ) {
                                 break;
                             }
@@ -66,33 +65,30 @@ namespace Cold_Waters_Expanded
                                     tris.Add( index );
                                     verts.Add( vertsLibrary[int.Parse( allLines[j].Split( ' ' )[3].Split( '/' )[0] ) - 1] );
                                     norms.Add( normsLibrary[int.Parse( allLines[j].Split( ' ' )[3].Split( '/' )[2] ) - 1] );
-                                    //Debug.Log( int.Parse( allLines[j].Split( ' ' )[3].Split( '/' )[1] ) - 1 );
                                     uvws.Add( uvsLibrary[int.Parse( allLines[j].Split( ' ' )[3].Split( '/' )[1] ) - 1] );
                                     index++;
                                     break;
-                                case "":
-                                    mesh.vertices = verts.ToArray();
-                                    mesh.normals = norms.ToArray();
-                                    mesh.uv = uvws.ToArray();
-                                    mesh.triangles = tris.ToArray();
-                                    mesh.RecalculateBounds();
-                                    meshes.Add( mesh );
+                                case "g":
                                     exported = true;
-                                    //Debug.Log( mesh.name );
                                     break;
                                 default:
                                     break;
                             }
                         }
+                        mesh.vertices = verts.ToArray();
+                        mesh.normals = norms.ToArray();
+                        mesh.uv = uvws.ToArray();
+                        mesh.triangles = tris.ToArray();
+                        mesh.RecalculateBounds();
+                        meshes.Add( mesh );
+                        exported = true;
+                        //Debug.Log( mesh.name );
                         break;
                     default:
                         break;
                 }
                 i++;
             }
-        }
-
-        public Mesh[] GetMeshes() {
             return meshes.ToArray();
         }
 
