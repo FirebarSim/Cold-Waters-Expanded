@@ -1,0 +1,32 @@
+UseTerrain=TRUE
+MapCoordinates=1470,946
+MapNavigationData=campaign/images/maps/norwegian_sea_navmap
+MapElevationData=campaign/images/maps/norwegian_sea_bathymetry
+WorldObjectsData=campaign/maps/norwegian_sea_world_objects
+VesselsAndTraffic=campaign/maps/norwegian_sea_traffic
+
+//Environment
+Date=14 NOV 1984
+Hemisphere=North
+Time=1200
+UsePresetEnvironment=TRUE
+Weather=Clear
+SeaState=Calm
+DuctStrength=Moderate
+LayerStrength=Moderate
+
+//Enemy Ships
+NumberOfEnemyUnits=1-1,1-1
+CombatBehaviour=DEFENSIVE,OFFENSIVE
+EnemyShipClasses=wp_ssn_november,wp_ss_foxtrot
+FormationCruiseSpeed=12
+
+//Enemy Aircraft
+NumberOfHelicopters=0
+HelicopterType=wp_helix
+NumberOfAircraft=0
+AircraftType=wp_il-38_may
+
+PlayerVessels=uk_ssn_dreadnought
+CommanderName=Rear-Admiral, Submarines
+CommanderFleetName=Fleet Submarines
