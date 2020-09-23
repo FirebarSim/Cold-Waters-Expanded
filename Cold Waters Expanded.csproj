@@ -73,8 +73,8 @@
     <Compile Include="AssetBundleImporter.cs" />
     <Compile Include="glTFImporter.cs" />
     <Compile Include="MatImporter.cs" />
-    <Compile Include="ObjImporter.cs" />
-    <Compile Include="Patch.cs" />
+    <Compile Include="ImporterPatch.cs" />
+    <Compile Include="PatchLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
