@@ -1,6 +1,6 @@
 # Cold-Waters-Expanded
 ## Install Guide
-* Download the BepInEx Framework (32-Bit) from BepInEx and install it by following their install guide: https://bepinex.github.io/bepinex_docs/master/articles/user_guide/installation/index.html?tabs=tabid-win
+* Download the BepInEx Framework (32-Bit) from BepInEx https://github.com/BepInEx/BepInEx/releases and install it by following their install guide: https://bepinex.github.io/bepinex_docs/master/articles/user_guide/installation/index.html?tabs=tabid-win
 * Run Cold Waters to generate the BepInEx config file (the game might not start properly here).
 * Edit the `<[Preloader.Entrypoint]>` section in `Cold Waters\BepInEx\config\BepInEx.cfg` as follows:
 ```
