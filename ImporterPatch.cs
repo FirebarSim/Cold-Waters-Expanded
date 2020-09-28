@@ -8,10 +8,11 @@ using System.Collections.Generic;
 using System;
 using System.Runtime.InteropServices;
 using System.Linq;
+using UnityEngine.SocialPlatforms;
 
 namespace Cold_Waters_Expanded
 {
-	[BepInPlugin( "org.cwe.plugins.import", "Cold Waters Expanded Import Patches", "1.0.0.2" )]
+	[BepInPlugin( "org.cwe.plugins.import", "Cold Waters Expanded Import Patches", "1.0.0.4" )]
 	public class ImporterPatch : BaseUnityPlugin
 	{
 
@@ -21,7 +22,6 @@ namespace Cold_Waters_Expanded
 
 		void Awake() {
 			patcher = this;
-			//JsonUtility.FromJson<SerialiseMaterial>( File.ReadAllText( Application.streamingAssetsPath + "/override/ships/uk_ddg_type42/uk_ssn_dreadnought_propbronze.mtl" ) ).GetMaterial();
 		}
 
 		static Mesh[] GetModel( string modelPath ) {
@@ -72,18 +72,6 @@ namespace Cold_Waters_Expanded
 			}
 			return Resources.Load( materialPathName ) as Material;
 		}
-
-		//static GameObject SetupMesh( VesselBuilder veselBuilder, bool isCustom, Transform vesselMesholder, Vector3 meshPosition, Vector3 meshRotation, Material meshMaterial, string meshName ) {
-		//	GameObject gameObject = UnityEngine.Object.Instantiate( (GameObject) Resources.Load( "template_objects/meshTemplate" ), vesselMesholder.position, Quaternion.identity ) as GameObject;
-		//	gameObject.transform.SetParent( vesselMesholder, worldPositionStays: false );
-		//	gameObject.transform.localPosition = meshPosition;
-		//	gameObject.transform.localRotation = Quaternion.Slerp( Quaternion.identity, Quaternion.Euler( meshRotation ), 1f );
-		//	gameObject.GetComponent<MeshRenderer>().sharedMaterial = meshMaterial;
-		//	veselBuilder.currentMesh = Traverse.Create( veselBuilder ).Method( "GetMesh", meshName ).GetValue<Mesh>();
-		//	gameObject.GetComponent<MeshFilter>().mesh = veselBuilder.currentMesh;
-		//	gameObject.name = meshName;
-		//	return gameObject;
-		//}
 
 		[HarmonyPatch( typeof( VesselBuilder ), "CreateAndPlaceMeshes" )]
 		public class VesselBuilder_CreateAndPlaceMeshes_Patch
@@ -1177,6 +1165,7 @@ namespace Cold_Waters_Expanded
 				Torpedo component = UIFunctions.globaluifunctions.database.databaseweapondata[weaponID].weaponObject.GetComponent<Torpedo>();
 				Vector3 localPosition = Vector3.zero;
 				Vector3 zero = Vector3.zero;
+				Vector3 localScale = Vector3.one;
 				Texture texture = null;
 				Material material = null;
 				AudioSource audioSource = null;
@@ -1222,6 +1211,9 @@ namespace Cold_Waters_Expanded
 						case "MeshRotation":
 							zero = UIFunctions.globaluifunctions.textparser.PopulateVector3( array2[1].Trim() );
 							break;
+						case "MeshScale":
+							localScale = UIFunctions.globaluifunctions.textparser.PopulateVector3( array2[1].Trim() );
+							break;
 						case "Material":
 							material = GetMaterial( array2[1].Trim() );
 							break;
@@ -1243,11 +1235,13 @@ namespace Cold_Waters_Expanded
 							component.torpedoMeshes[0].GetComponent<MeshFilter>().mesh = Traverse.Create( __instance ).Method( "GetMesh", array2[1].Trim() ).GetValue<Mesh>();
 							component.torpedoMeshes[0].GetComponent<MeshRenderer>().sharedMaterial = material;
 							component.torpedoMeshes[0].transform.localPosition = localPosition;
+							component.torpedoMeshes[0].transform.localScale = localScale;
 							break;
 						case "MeshWeaponCanister":
 							component.torpedoMeshes[1].GetComponent<MeshFilter>().mesh = Traverse.Create( __instance ).Method( "GetMesh", array2[1].Trim() ).GetValue<Mesh>();
 							component.torpedoMeshes[1].GetComponent<MeshRenderer>().sharedMaterial = material;
 							component.torpedoMeshes[1].transform.localPosition = localPosition;
+							component.torpedoMeshes[1].transform.localScale = localScale;
 							component.torpedoMeshes[1].gameObject.SetActive( value: true );
 							component.torpedoMeshes[0].layer = 17;
 							break;
@@ -1258,6 +1252,7 @@ namespace Cold_Waters_Expanded
 							if( isCustom ) {
 								component.torpedoPropMeshes[countProps].transform.localPosition = localPosition;
 								component.torpedoPropMeshes[countProps].transform.localRotation = Quaternion.Euler( -90f, 0f, 0f );
+								component.torpedoPropMeshes[countProps].transform.localScale = localScale;
 								Destroy( component.torpedoPropMeshes[countProps].GetComponent<MeshFilter>() );
 								Destroy( component.torpedoPropMeshes[countProps].GetComponent<MeshRenderer>() );
 								GameObject goProp = new GameObject();
@@ -1272,6 +1267,7 @@ namespace Cold_Waters_Expanded
 								component.torpedoPropMeshes[countProps].GetComponent<MeshFilter>().mesh = Traverse.Create( __instance ).Method( "GetMesh", array2[1].Trim() ).GetValue<Mesh>();
 								component.torpedoPropMeshes[countProps].GetComponent<MeshRenderer>().sharedMaterial = material;
 								component.torpedoPropMeshes[countProps].transform.localPosition = localPosition;
+								component.torpedoPropMeshes[countProps].transform.localScale = localScale;
 								component.torpedoPropMeshes[countProps].transform.localRotation = Quaternion.Slerp( Quaternion.identity, Quaternion.Euler( -90f, 0f, 0f ), 1f );
 								component.propRotations[countProps].speed = speed;
 								countProps++;
@@ -1281,6 +1277,7 @@ namespace Cold_Waters_Expanded
 							component.boosterMesh.GetComponent<MeshFilter>().mesh = Traverse.Create( __instance ).Method( "GetMesh", array2[1].Trim() ).GetValue<Mesh>();
 							component.boosterMesh.GetComponent<MeshRenderer>().sharedMaterial = material;
 							component.boosterMesh.transform.localPosition = localPosition;
+							component.boosterMesh.transform.localScale = localScale;
 							break;
 						case "AudioSource":
 							switch( array2[1].Trim() ) {
@@ -1344,48 +1341,7 @@ namespace Cold_Waters_Expanded
 			}
 		}
 
-		//[HarmonyPatch( typeof( Compartment ), "SinkShip" )]
-		//public class Compartment_SinkShip_Patch
-		//{
-		//	[HarmonyPrefix]
-		//	public static void Prefix( Compartment __instance, Vessel vesselToSink, bool explosion = false ) {
-		//		if( Patcher.patcher.vesselSmokeSystems.ContainsKey( vesselToSink ) ) {
-		//			foreach( ParticleSystem particleSystem in Patcher.patcher.vesselSmokeSystems[vesselToSink] ) {
-		//				particleSystem.gameObject.SetActive( false );
-		//			}
-		//		}
-		//	}
-		//}
-
-		//[HarmonyPatch( typeof( TextParser ), "ReadWeaponData" )]
-		//public class TextParser_ReadWeaponData_Patch
-		//{
-		//	[HarmonyPostfix]
-		//	public static void Postfix( TextParser __instance ) {
-		//		List<DatabaseWeaponData> weaponList = __instance.database.databaseweapondata.ToList();
-		//		List<DatabaseDepthChargeData> depthChargeList = __instance.database.databasedepthchargedata.ToList();
-		//		List<DatabaseCountermeasureData> countermeasureList = __instance.database.databasecountermeasuredata.ToList();
-		//		Debug.Log( "Searching for Weapon Files" );
-		//		//foreach( string filePath in Directory.GetFiles(Application.streamingAssetsPath + "/override/weapons/","*.weapon") ) {
-		//		//	//Debug.Log( filename );
-		//		//	SerialiseWeapon serialiseWeapon = JsonUtility.FromJson<SerialiseWeapon>( File.ReadAllText( filePath ) );
-		//		//	if( weaponList.Find(weapon => weapon.weaponName == serialiseWeapon.weaponObjectReference) ) {
-		//		//		weaponList.Remove( weaponList.Find( weapon => weapon.weaponName == serialiseWeapon.weaponObjectReference ) );
-		//		//	}
-		//		//	DatabaseWeaponData databaseWeaponData = serialiseWeapon.ToDatabaseWeaponData();
-		//		//	weaponList.Add( databaseWeaponData );
-		//		//}
-		//		//int i = 0;
-		//		//foreach( DatabaseWeaponData weaponData in weaponList ) {
-		//		//	weaponData.weaponID = i;
-		//		//	i++;
-		//		//}
-		//		//__instance.database.databaseweapondata = weaponList.ToArray();
-		//		Debug.Log( JsonUtility.ToJson( weaponList[1] ) );
-		//	}
-		//}
-
-			[HarmonyPatch( typeof( Enemy_AntiMissileGuns ), "InitialiseEnemyMissileDefense" )]
+		[HarmonyPatch( typeof( Enemy_AntiMissileGuns ), "InitialiseEnemyMissileDefense" )]
 		public class Enemy_AntiMissileGuns_InitialiseEnemyMissileDefense_Patch
 		{
 			[HarmonyPrefix]
@@ -1441,452 +1397,5 @@ namespace Cold_Waters_Expanded
 				return false;
 			}
 		}
-
-		//[HarmonyPatch( typeof( LevelLoadManager ), "SpawnPlayerVessel" )]
-		//public class LevelLoadManager_SpawnPlayerVessel_Patch
-		//{
-		//	[HarmonyPrefix]
-		//	public static bool Prefix( LevelLoadManager __instance, ref GameObject __result, int vesselNumber, int shipClass ) {
-		//		Transform transform = __instance.spawnObjects[1].transform;
-		//		GameObject gameObject = __instance.uifunctions.vesselbuilder.CreateVessel( shipClass, playerControlled: true, transform.position, transform.rotation );
-		//		Vessel component = gameObject.GetComponent<Vessel>();
-		//		component.databaseshipdata = __instance.uifunctions.database.databaseshipdata[shipClass];
-		//		float num2 = 0;
-		//		if( component.databaseshipdata.shipType == "SUBMARINE" ) {
-		//			num2 = UnityEngine.Random.Range( 70f, 450f );
-		//			if( !GameDataManager.missionMode && !GameDataManager.trainingMode ) {
-		//				num2 = ( ( UIFunctions.globaluifunctions.campaignmanager.playerCurrentSpeed > UIFunctions.globaluifunctions.campaignmanager.playerMapSpeeds[1] ) ? UIFunctions.globaluifunctions.campaignmanager.playerStartDepths[2] : ( ( !( UIFunctions.globaluifunctions.campaignmanager.playerCurrentSpeed > UIFunctions.globaluifunctions.campaignmanager.playerMapSpeeds[0] ) ) ? UIFunctions.globaluifunctions.campaignmanager.playerStartDepths[0] : UIFunctions.globaluifunctions.campaignmanager.playerStartDepths[1] ) );
-		//			}
-		//		}
-		//		Transform transform2 = gameObject.transform;
-		//		Vector3 position = gameObject.transform.position;
-		//		float x = position.x;
-		//		float y = 1000f - num2 * GameDataManager.feetToUnits;
-		//		Vector3 position2 = gameObject.transform.position;
-		//		transform2.position = new Vector3( x, y, position2.z );
-		//		component.vesselListIndex = vesselNumber;
-		//		GameDataManager.playervesselsonlevel[vesselNumber] = component;
-		//		component.playercontrolled = true;
-		//		component.damagesystem.DamageInit();
-		//		__result = gameObject;
-		//		return false;
-		//	}
-		//}
-
-		//[HarmonyPatch( typeof( WeaponSource ), "InitialiseWeaponSource" )]
-		//public class WeaponSource_InitialiseWeaponSource_Patch
-		//{
-		//	[HarmonyPrefix]
-		//	public static bool Prefix( WeaponSource __instance ) {
-		//		if( __instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotypes != null ) {
-		//			__instance.torpedoNames = __instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotypes;
-		//		}
-		//		if( __instance.parentVesselMovement.parentVessel.databaseshipdata.torpedoIDs != null ) {
-		//			__instance.torpedoTypes = __instance.parentVesselMovement.parentVessel.databaseshipdata.torpedoIDs;
-		//		}
-		//		if( __instance.parentVesselMovement.parentVessel.databaseshipdata.torpedoNumbers != null ) {
-		//			__instance.currentTorpsOnBoard = new int[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedoNumbers.Length];
-		//		}
-		//		for( int i = 0; i < __instance.currentTorpsOnBoard.Length; i++ ) {
-		//			__instance.currentTorpsOnBoard[i] = __instance.parentVesselMovement.parentVessel.databaseshipdata.torpedoNumbers[i];
-		//		}
-		//		if( __instance.parentVesselMovement.parentVessel.databaseshipdata.vlsTorpedotypes != null ) {
-		//			__instance.vlsTorpedoNames = __instance.parentVesselMovement.parentVessel.databaseshipdata.vlsTorpedotypes;
-		//			__instance.vlsTorpedoTypes = __instance.parentVesselMovement.parentVessel.databaseshipdata.vlsTorpedoIDs;
-		//			__instance.vlsCurrentTorpsOnBoard = new int[__instance.parentVesselMovement.parentVessel.databaseshipdata.vlsTorpedoNumbers.Length];
-		//			for( int j = 0; j < __instance.vlsCurrentTorpsOnBoard.Length; j++ ) {
-		//				__instance.vlsCurrentTorpsOnBoard[j] = __instance.parentVesselMovement.parentVessel.databaseshipdata.vlsTorpedoNumbers[j];
-		//			}
-		//			__instance.hasVLS = true;
-		//		}
-		//		if( __instance.tubeParticleEffects != null ) {
-		//			__instance.tubeParticleSystems = new ParticleSystem[__instance.tubeParticleEffects.Length];
-		//		}
-		//		for( int k = 0; k < __instance.torpedoTubes.Length; k++ ) {
-		//			GameObject gameObject = UnityEngine.Object.Instantiate( UIFunctions.globaluifunctions.database.torpedoLaunch[0], __instance.torpedoTubes[k].position, __instance.torpedoTubes[k].rotation ) as GameObject;
-		//			gameObject.transform.SetParent( __instance.parentVesselMovement.parentVessel.meshHolder );
-		//			gameObject.transform.localPosition = __instance.tubeParticleEffects[k];
-		//			gameObject.transform.localRotation = Quaternion.identity;
-		//			__instance.tubeParticleSystems[k] = gameObject.GetComponent<ParticleSystem>();
-		//		}
-		//		if( __instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes > 0 ) {
-		//			__instance.tubeStatus = new int[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			__instance.weaponInTube = new int[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			__instance.wantedWeaponInTube = new int[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			__instance.originalLoadedWeaponInTube = new int[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			for( int l = 0; l < __instance.originalLoadedWeaponInTube.Length; l++ ) {
-		//				__instance.originalLoadedWeaponInTube[l] = -1;
-		//			}
-		//			__instance.originalLoadedWeaponInTubeSet = new bool[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			__instance.originalLoadedWeaponTimer = new float[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			__instance.lastTubeLoading = -1;
-		//			__instance.torpedoSearchPattern = new int[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			__instance.torpedoDepthPattern = new int[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			__instance.torpedoHomingPattern = new int[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			__instance.tubeReloadingTimer = new float[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			__instance.tubeReloadingDirection = new float[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//			__instance.torpedoesOnWire = new Torpedo[__instance.parentVesselMovement.parentVessel.databaseshipdata.torpedotubes];
-		//		}
-		//		__instance.noisemakersOnBoard = __instance.parentVesselMovement.parentVessel.databaseshipdata.numberofnoisemakers;
-		//		__instance.noisemakerReloadTime = __instance.parentVesselMovement.parentVessel.databaseshipdata.noisemakerreloadtime * OptionsManager.difficultySettings["PlayerWeaponReloadTime"];
-		//		__instance.tubeReloadTime = __instance.parentVesselMovement.parentVessel.databaseshipdata.tubereloadtime * OptionsManager.difficultySettings["PlayerWeaponReloadTime"];
-		//		UIFunctions.globaluifunctions.playerfunctions.numberOfWires = __instance.parentVesselMovement.parentVessel.databaseshipdata.numberOfWires;
-		//		UIFunctions.globaluifunctions.playerfunctions.numberOfWiresUsed = 0;
-		//		UIFunctions.globaluifunctions.portRearm.SetPlayerNumberOfWires();
-		//		UIFunctions.globaluifunctions.playerfunctions.damagecontrol.compartmentCurrentFlooding = new float[5];
-		//		UIFunctions.globaluifunctions.playerfunctions.damagecontrol.compartmentTotalFlooding = new float[5];
-		//		return false;
-		//	}
-		//}
-
-		//[HarmonyPatch( typeof( PlayerFunctions ), "InitialiseWeapons" )]
-		//public class PlayerFunctions_InitialiseWeapons_Patch
-		//{
-		//	[HarmonyPrefix]
-		//	public static bool Prefix( PlayerFunctions __instance ) {
-		//		__instance.mastThresholdDepth = __instance.playerVessel.databaseshipdata.periscopeDepthInFeet + 5;
-		//		__instance.fullMessageLog = new List<string>();
-		//		__instance.fullMessageLogColors = new List<Color32>();
-		//		__instance.numberOfLogEntries = 0;
-		//		if( __instance.currentFullLogParentObject != null ) {
-		//			UnityEngine.Object.Destroy( __instance.currentFullLogParentObject );
-		//		}
-		//		__instance.currentFullLogParentObject = UnityEngine.Object.Instantiate( __instance.fullLogParentObject );
-		//		__instance.currentFullLogParentObject.transform.SetParent( __instance.fullLogParentObject.transform, worldPositionStays: false );
-		//		__instance.currentFullLogParentObject.GetComponent<Image>().enabled = true;
-		//		__instance.fullLogScrollRect.content = __instance.currentFullLogParentObject.GetComponent<RectTransform>();
-		//		__instance.fullLogObject.SetActive( value: false );
-		//		__instance.fullLogToggleButton.SetActive( __instance.generateFullLog );
-		//		__instance.playerSunkBy = string.Empty;
-		//		__instance.hudHidden = false;
-		//		__instance.eventcamera.eventCameraOn = false;
-		//		__instance.SetEventCameraMode();
-		//		__instance.ballastRechargeTimer = 0f;
-		//		__instance.ballastRechargeTime = 120f;
-		//		__instance.landAttackNumber = 0;
-		//		__instance.ClearStatusIcons();
-		//		__instance.firstDepthCheckDone = false;
-		//		//draggingWaypoint = false;
-		//		Traverse.Create( __instance ).Field( "draggingWaypoint" ).SetValue( false );
-		//		Debug.Log( __instance.torpedoTubesGUIs.Length );
-		//		for( int i = 0; i < __instance.torpedoTubesGUIs.Length; i++ ) {
-		//			UnityEngine.Object.Destroy( __instance.torpedoTubesGUIs[i].gameObject );
-		//		}
-		//		if( __instance.playerVessel.databaseshipdata.torpedoIDs != null ) {
-		//			__instance.weaponSprites = new Sprite[__instance.playerVessel.databaseshipdata.torpedoIDs.Length];
-		//			for( int j = 0; j < __instance.playerVessel.databaseshipdata.torpedoIDs.Length; j++ ) {
-		//				__instance.weaponSprites[j] = UIFunctions.globaluifunctions.database.databaseweapondata[__instance.playerVessel.databaseshipdata.torpedoIDs[j]].weaponImage;
-		//			}
-		//		}
-		//		Vector2 vector = new Vector2( -260f, 36f );
-		//		int num = Mathf.FloorToInt( __instance.playerVessel.databaseshipdata.torpedotubes / 2 );
-		//		int num2 = 1;
-		//		float num3 = 0f;
-		//		if( __instance.playerVessel.databaseshipdata.vlsTorpedoIDs != null ) {
-		//			num2 = 0;
-		//			num3 = 36f;
-		//		}
-		//		float x = vector.x;
-		//		float num4 = vector.y * ( (float) num - (float) num2 );
-		//		__instance.torpedoTubesGUIs = new TorpedoTubeGUI[__instance.playerVessel.databaseshipdata.torpedotubes];
-		//		__instance.torpedoTubeImages = new Image[__instance.playerVessel.databaseshipdata.torpedotubes];
-		//		for( int k = 0; k < __instance.playerVessel.databaseshipdata.torpedotubes; k++ ) {
-		//			GameObject torpTube = UnityEngine.Object.Instantiate( __instance.torpedoTubeGUIObject, __instance.hudTransfrom.position, Quaternion.identity ) as GameObject;
-		//			torpTube.SetActive( value: true );
-		//			torpTube.transform.SetParent( __instance.menuPanel.transform, worldPositionStays: true );
-		//			RectTransform component = torpTube.GetComponent<RectTransform>();
-		//			component.localScale = Vector3.one;
-		//			torpTube.transform.localPosition = new Vector2( x, num4 );
-		//			torpTube.name = k.ToString();
-		//			num4 -= vector.y;
-		//			if( k == num - 1 ) {
-		//				x = 0f;
-		//				num4 = vector.y * ( (float) num - (float) num2 );
-		//			}
-		//			torpTube.transform.SetParent( __instance.menuPanel.transform, worldPositionStays: true );
-		//			__instance.torpedoTubesGUIs[k] = torpTube.GetComponent<TorpedoTubeGUI>();
-		//			__instance.torpedoTubeImages[k] = __instance.torpedoTubesGUIs[k].weaponInTube;
-		//			__instance.torpedoTubesGUIs[k].maskSprite.gameObject.GetComponent<Button>().onClick.AddListener( delegate {
-		//				__instance.ClickOnTube( int.Parse( torpTube.name ) );
-		//			} );
-		//			ColorBlock colors = __instance.torpedoTubesGUIs[k].attackSettingButton.colors;
-		//			colors.normalColor = __instance.helmmanager.buttonColors[1];
-		//			colors.highlightedColor = __instance.helmmanager.buttonColors[1];
-		//			colors.pressedColor = __instance.helmmanager.buttonColors[1];
-		//			colors.disabledColor = __instance.helmmanager.buttonColors[0];
-		//			__instance.torpedoTubesGUIs[k].attackSettingButton.colors = colors;
-		//			__instance.torpedoTubesGUIs[k].homeSettingButton.colors = colors;
-		//			__instance.torpedoTubesGUIs[k].depthSettingButton.colors = colors;
-		//		}
-		//		if( !GameDataManager.trainingMode && !GameDataManager.missionMode ) {
-		//			UIFunctions.globaluifunctions.campaignmanager.GetPlayerCampaignData();
-		//		}
-		//		for( int l = 0; l < __instance.playerVessel.databaseshipdata.torpedotubes; l++ ) {
-		//			if( !GameDataManager.trainingMode && !GameDataManager.missionMode && UIFunctions.globaluifunctions.campaignmanager.playercampaigndata.playerTubeStatus[l] == -200 ) {
-		//				__instance.torpedoTubeImages[l].sprite = UIFunctions.globaluifunctions.playerfunctions.tubeDestroyedSprite;
-		//				__instance.ClearTubeSettingButtons( l );
-		//				__instance.playerVessel.vesselmovement.weaponSource.tubeStatus[l] = -200;
-		//				__instance.playerVessel.vesselmovement.weaponSource.weaponInTube[l] = -200;
-		//				continue;
-		//			}
-		//			//int playerTorpedoIDInTubeOnInit = GetPlayerTorpedoIDInTubeOnInit( l );
-		//			int playerTorpedoIDInTubeOnInit = Traverse.Create( __instance ).Method( "GetPlayerTorpedoIDInTubeOnInit", new object[] { 1 } ).GetValue<int>();
-		//			bool flag = false;
-		//			int[] torpedoIDs = __instance.playerVessel.databaseshipdata.torpedoIDs;
-		//			foreach( int num5 in torpedoIDs ) {
-		//				if( playerTorpedoIDInTubeOnInit == num5 ) {
-		//					flag = true;
-		//				}
-		//			}
-		//			if( !flag ) {
-		//				__instance.playerVessel.vesselmovement.weaponSource.tubeStatus[l] = -10;
-		//				__instance.playerVessel.vesselmovement.weaponSource.weaponInTube[l] = -10;
-		//				__instance.torpedoTubeImages[l].gameObject.SetActive( value: false );
-		//				__instance.ClearTubeSettingButtons( l );
-		//			}
-		//			else {
-		//				__instance.playerVessel.vesselmovement.weaponSource.torpedoSearchPattern[l] = __instance.GetSettingIndex( UIFunctions.globaluifunctions.database.databaseweapondata[playerTorpedoIDInTubeOnInit].searchSettings[0], __instance.attackSettingDefinitions );
-		//				__instance.playerVessel.vesselmovement.weaponSource.torpedoDepthPattern[l] = __instance.GetSettingIndex( UIFunctions.globaluifunctions.database.databaseweapondata[playerTorpedoIDInTubeOnInit].heightSettings[0], __instance.depthSettingDefinitions );
-		//				__instance.playerVessel.vesselmovement.weaponSource.torpedoHomingPattern[l] = __instance.GetSettingIndex( UIFunctions.globaluifunctions.database.databaseweapondata[playerTorpedoIDInTubeOnInit].homeSettings[0], __instance.homeSettingDefinitions );
-		//				__instance.SetTubeSettingButtons( l );
-		//			}
-		//		}
-		//		//HighlightActiveTube();
-		//		Traverse.Create( __instance ).Method( "HighlightActiveTube" ).GetValue();
-		//		Vector2 v = new Vector2( 0f, vector.y * (float) num + vector.y - 36f + num3 );
-		//		__instance.signaturePanel.transform.localPosition = v;
-		//		__instance.conditionsPanel.transform.localPosition = v;
-		//		__instance.damagePanel.transform.localPosition = v;
-		//		__instance.storesPanel.transform.localPosition = v;
-		//		__instance.messageLogPanel.transform.localPosition = new Vector2( 0f, 36f * (float) num + 28f + num3 );
-		//		__instance.messageLogPositions = new Vector2( 36f * (float) num + 28f + num3, 36f * (float) num + 275f + num3 );
-		//		if( __instance.currentOpenPanel != -1 ) {
-		//			__instance.OpenContextualPanel( __instance.currentOpenPanel );
-		//		}
-		//		__instance.currentSignatureIndex = 0;
-		//		__instance.sensormanager.SetSonarSignatureLabelData( __instance.playerVessel.databaseshipdata.shipID, 2 );
-		//		__instance.DisableESMMeter();
-		//		__instance.storesPanel.SetActive( value: false );
-		//		__instance.wireData[0].text = string.Empty;
-		//		__instance.wireData[1].text = string.Empty;
-		//		return false;
-		//	}
-		//}
-
-		//[HarmonyPatch( typeof( PortRearm ), "SetLoadoutStats" )]
-		//public class PortRearm_SetLoadoutStats_Patch
-		//{
-		//	[HarmonyPrefix]
-		//	public static bool Prefix( PortRearm __instance ) {
-		//		__instance.numberOfNoiseMakers.text = LanguageManager.GetDictionaryString( LanguageManager.interfaceDictionary, "NoisemakerStores" ) + " " + __instance.playerVessel.vesselmovement.weaponSource.noisemakersOnBoard;
-		//		__instance.noisemakerHelmPanelText.text = __instance.playerVessel.vesselmovement.weaponSource.noisemakersOnBoard.ToString();
-		//		for( int i = 0; i < __instance.reloadNameNumber.Length; i++ ) {
-		//			__instance.reloadNameNumber[i].color = __instance.textColors[1];
-		//			__instance.highlights[i].enabled = false;
-		//			if( i == __instance.currentWeapon && __instance.portControls.activeSelf ) {
-		//				__instance.highlights[i].enabled = true;
-		//			}
-		//		}
-		//		int num = 0;
-		//		if( __instance.playerVessel.vesselmovement.weaponSource.hasVLS ) {
-		//			num = 1;
-		//		}
-		//		int[] array = new int[__instance.playerVessel.vesselmovement.weaponSource.torpedoNames.Length];
-		//		for( int j = 0; j < __instance.playerVessel.vesselmovement.weaponSource.tubeStatus.Length - num; j++ ) {
-		//			if( __instance.playerVessel.vesselmovement.weaponSource.tubeStatus[j] >= 0 ) {
-		//				array[__instance.playerVessel.vesselmovement.weaponSource.tubeStatus[j]]++;
-		//			}
-		//		}
-		//		for( int k = 0; k < __instance.weaponIDList.Length; k++ ) {
-		//			if( __instance.weaponIDList[k] < 0 ) {
-		//				continue;
-		//			}
-		//			__instance.reloadNameNumber[k].text = UIFunctions.globaluifunctions.database.databaseweapondata[__instance.weaponIDList[k]].weaponName + "\n";
-		//			if( UIFunctions.globaluifunctions.menuSystemParent.activeSelf && UIFunctions.globaluifunctions.campaignmanager.playerInPort ) {
-		//				if( !GameDataManager.missionMode && !GameDataManager.trainingMode ) {
-		//					__instance.vlsNumber[k].text = "  <b>" + Mathf.RoundToInt( UIFunctions.globaluifunctions.database.databaseweapondata[__instance.weaponIDList[k]].replenishTime * OptionsManager.difficultySettings["RestockTimeModifier"] ) + " " + LanguageManager.interfaceDictionary["Minutes"] + "</b>\n";
-		//				}
-		//			}
-		//			else {
-		//				__instance.vlsNumber[k].text = string.Empty;
-		//			}
-		//		}
-
-		//		for( int l = 0; l < __instance.playerVessel.vesselmovement.weaponSource.torpedoNames.Length; l++ ) {
-		//			__instance.reloadNameNumber[l].text += __instance.playerVessel.vesselmovement.weaponSource.currentTorpsOnBoard[l] - array[l];
-		//			Text obj = __instance.reloadNameNumber[l];
-		//			obj.text = obj.text + "  (" + array[l] + ")";
-		//		}
-
-		//		for( int m = 0; m < __instance.playerVessel.databaseshipdata.torpedotubes; m++ ) {
-		//			if( __instance.playerVessel.vesselmovement.weaponSource.tubeStatus[m] >= 0 ) {
-		//				UIFunctions.globaluifunctions.playerfunctions.torpedoTubeImages[m].gameObject.SetActive( value: true );
-		//				UIFunctions.globaluifunctions.playerfunctions.torpedoTubeImages[m].sprite = UIFunctions.globaluifunctions.database.databaseweapondata[UIFunctions.globaluifunctions.playerfunctions.GetPlayerTorpedoIDInTube( m )].weaponImage;
-		//			}
-		//			else if( __instance.playerVessel.vesselmovement.weaponSource.weaponInTube[m] == -100 ) {
-		//				UIFunctions.globaluifunctions.playerfunctions.torpedoTubeImages[m].gameObject.SetActive( value: true );
-		//				UIFunctions.globaluifunctions.playerfunctions.torpedoTubeImages[m].sprite = UIFunctions.globaluifunctions.playerfunctions.wireSprite;
-		//			}
-		//			else if( __instance.playerVessel.vesselmovement.weaponSource.tubeStatus[m] != -200 ) {
-		//				UIFunctions.globaluifunctions.playerfunctions.torpedoTubeImages[m].gameObject.SetActive( value: false );
-		//			}
-		//		}
-		//		int num2 = 0;
-		//		if( __instance.playerVessel.databaseshipdata.torpedoNumbers != null ) {
-		//			for( int n = 0; n < __instance.playerVessel.databaseshipdata.torpedoNumbers.Length; n++ ) {
-		//				num2 += __instance.playerVessel.databaseshipdata.torpedoNumbers[n];
-		//			}
-		//		}
-		//		int num3 = 0;
-		//		if( __instance.playerVessel.vesselmovement.weaponSource != null ) {
-		//			for( int num4 = 0; num4 < __instance.playerVessel.vesselmovement.weaponSource.currentTorpsOnBoard.Length; num4++ ) {
-		//				num3 += __instance.playerVessel.vesselmovement.weaponSource.currentTorpsOnBoard[num4];
-		//			}
-		//		}
-		//		int num5 = 0;
-		//		int num6 = 0;
-		//		if( __instance.playerVessel.vesselmovement.weaponSource.hasVLS ) {
-		//			for( int num7 = 0; num7 < __instance.playerVessel.databaseshipdata.vlsTorpedoNumbers.Length; num7++ ) {
-		//				num5 += __instance.playerVessel.databaseshipdata.vlsTorpedoNumbers[num7];
-		//			}
-		//			for( int num8 = 0; num8 < __instance.playerVessel.vesselmovement.weaponSource.vlsCurrentTorpsOnBoard.Length; num8++ ) {
-		//				num6 += __instance.playerVessel.vesselmovement.weaponSource.vlsCurrentTorpsOnBoard[num8];
-		//			}
-		//			for( int num9 = 0; num9 < __instance.playerVessel.vesselmovement.weaponSource.vlsTorpedoTypes.Length; num9++ ) {
-		//				for( int num10 = 0; num10 < __instance.weaponIDList.Length; num10++ ) {
-		//					if( __instance.playerVessel.vesselmovement.weaponSource.vlsTorpedoTypes[num9] == __instance.weaponIDList[num10] ) {
-		//						if( !__instance.vlsOnly[num10] ) {
-		//							__instance.reloadNameNumber[num10].text += "  ";
-		//						}
-		//						Text obj2 = __instance.reloadNameNumber[num10];
-		//						obj2.text = obj2.text + "VLS: " + __instance.playerVessel.vesselmovement.weaponSource.vlsCurrentTorpsOnBoard[num9];
-		//					}
-		//				}
-		//			}
-		//		}
-		//		if( GameDataManager.playervesselsonlevel[0].vesselmovement.weaponSource.sealsOnBoard ) {
-		//			num2 = __instance.playerVessel.databaseshipdata.torpedotubes - num;
-		//		}
-		//		__instance.slotNumbers.text = num3 + " / " + num2;
-		//		if( __instance.playerVessel.vesselmovement.weaponSource.hasVLS ) {
-		//			Text text = __instance.slotNumbers;
-		//			string text2 = text.text;
-		//			text.text = text2 + "\nVLS: " + num6 + " / " + num5;
-		//		}
-		//		__instance.sealTeamImage.gameObject.SetActive( GameDataManager.playervesselsonlevel[0].vesselmovement.weaponSource.sealsOnBoard );
-		//		return false;
-		//	}
-		//}
-
-		//[HarmonyPatch( typeof( TacticalMap ), "SetLeadPositionMarker" )]
-		//public class TacticalMap_SetLeadPositionMarker_Patch
-		//{
-		//	[HarmonyPrefix]
-		//	public static bool Prefix( TacticalMap __instance, int i ) {
-		//		int num = -1;
-		//		if( GameDataManager.playervesselsonlevel[0].vesselmovement.weaponSource.activeTube < GameDataManager.playervesselsonlevel[0].vesselmovement.weaponSource.weaponInTube.Length ) {
-		//			num = GameDataManager.playervesselsonlevel[0].vesselmovement.weaponSource.weaponInTube[GameDataManager.playervesselsonlevel[0].vesselmovement.weaponSource.activeTube];
-		//		}
-		//		if( num > -1 && UIFunctions.globaluifunctions.database.databaseweapondata[num].weaponType == "TORPEDO" ) {
-		//			float num2 = Vector3.Distance( GameDataManager.enemyvesselsonlevel[i].transform.position, GameDataManager.playervesselsonlevel[0].vesselmovement.weaponSource.torpedoTubes[GameDataManager.playervesselsonlevel[0].vesselmovement.weaponSource.activeTube].position );
-		//			float d = num2 / ( UIFunctions.globaluifunctions.database.databaseweapondata[num].runSpeed / 10f * GameDataManager.globalTranslationSpeed );
-		//			Vector3 vector = GameDataManager.enemyvesselsonlevel[i].transform.position + GameDataManager.enemyvesselsonlevel[i].transform.forward * GameDataManager.enemyvesselsonlevel[i].vesselmovement.shipSpeed.z * GameDataManager.globalTranslationSpeed * d;
-		//			__instance.dumbfireMarker.gameObject.transform.localPosition = new Vector3( vector.x * __instance.zoomFactor, vector.z * __instance.zoomFactor, -5f );
-		//			__instance.dumbfireMarker.gameObject.SetActive( value: true );
-		//		}
-		//		return false;
-		//	}
-		//}
-
-		//[HarmonyPatch( typeof( VesselAI ), "ActionCheck" )]
-		//public class VesselAI_ActionCheck_Patch
-		//{
-		//	[HarmonyPrefix]
-		//	public static bool Prefix( VesselAI __instance ) {
-		//		Debug.Log( "ActionCheck" + __instance.parentVessel.databaseshipdata.shipclass );
-		//		if( __instance.parentVessel.databaseshipdata.shipType == "SUBMARINE" ) {
-		//			//SubmarineAI();
-		//			Traverse.Create( __instance ).Method( "SubmarineAI" ).GetValue();
-		//		}
-		//		if( !__instance.parentVessel.acoustics.usingActiveSonar ) {
-		//			if( __instance.sensordata.decibelsLastDetected <= 0f && __instance.parentVessel.vesselmovement.shipSpeed.z > UnityEngine.Random.Range( 1f, 1.5f ) ) {
-		//				__instance.SwitchToActiveSonar();
-		//			}
-		//		}
-		//		else if( __instance.sensordata.decibelsLastDetected <= 0f && __instance.parentVessel.vesselmovement.shipSpeed.z < UnityEngine.Random.Range( 1f, 1.5f ) ) {
-		//			__instance.SwitchToPassiveSonar();
-		//		}
-		//		if( !UIFunctions.globaluifunctions.combatai.PlayerIsCombatWorthy() ) {
-		//			__instance.parentVessel.vesselai.takingAction = 0;
-		//			UIFunctions.globaluifunctions.combatai.AIAdjustTelegraph( __instance.parentVessel, UnityEngine.Random.Range( 3, 7 ) );
-		//			if( !__instance.parentVessel.vesselmovement.atAnchor || __instance.isNeutral ) {
-		//				__instance.parentVessel.vesselmovement.isCruising = true;
-		//			}
-		//		}
-		//		else if( __instance.sensordata.playerDetected ) {
-		//			__instance.parentVessel.uifunctions.combatai.CheckToAttackPlayer( __instance.parentVessel );
-		//		}
-		//		else {
-		//			//SprintAndDrift();
-		//			Traverse.Create( __instance ).Method( "SprintAndDrift" ).GetValue();
-		//		}
-		//		if( !__instance.hasNavalGuns ) {
-		//			Debug.Log( "NoGuns" );
-		//			return false;
-		//		}
-		//		if( __instance.enemynavalguns.enabled ) {
-		//			Debug.Log( "Guns" );
-		//			if( __instance.sensordata.rangeYardsLastDetected < UIFunctions.globaluifunctions.database.databasedepthchargedata[__instance.parentVessel.databaseshipdata.navalGunTypes[0]].weaponRange.y * 0.5f ) {
-		//				if( __instance.takingAction != 9 && __instance.takingAction != 10 ) {
-		//					__instance.takingAction = 1;
-		//					__instance.parentVessel.vesselmovement.isCruising = false;
-		//					UIFunctions.globaluifunctions.combatai.AIAdjustTelegraph( __instance.parentVessel, 6 );
-		//					__instance.actionTimeToFinish = UnityEngine.Random.Range( 8f, 30f );
-		//				}
-		//			}
-		//			else if( __instance.sensordata.rangeYardsLastDetected < UIFunctions.globaluifunctions.database.databasedepthchargedata[__instance.parentVessel.databaseshipdata.navalGunTypes[0]].weaponRange.y * 0.2f && __instance.takingAction != 9 && __instance.takingAction != 10 ) {
-		//				__instance.takingAction = 2;
-		//				__instance.actionPosition = GameDataManager.playervesselsonlevel[0].transform.position;
-		//				__instance.parentVessel.vesselmovement.isCruising = false;
-		//				UIFunctions.globaluifunctions.combatai.AIAdjustTelegraph( __instance.parentVessel, 6 );
-		//				__instance.actionTimeToFinish = UnityEngine.Random.Range( 8f, 30f );
-		//			}
-		//			if( __instance.sensordata.rangeYardsLastDetected > UIFunctions.globaluifunctions.database.databasedepthchargedata[__instance.parentVessel.databaseshipdata.navalGunTypes[0]].weaponRange.y ) {
-		//				for( int i = 0; i < __instance.enemynavalguns.firingPhase.Length; i++ ) {
-		//					__instance.enemynavalguns.firingPhase[i] = 4;
-		//					__instance.enemynavalguns.firingAtPlayerTimer[i] = 0f;
-		//				}
-		//			}
-		//		}
-		//		Vector3 position = GameDataManager.playervesselsonlevel[0].transform.position;
-		//		if( !( position.y > GameDataManager.playervesselsonlevel[0].databaseshipdata.submergedat ) || !( __instance.sensordata.rangeYardsLastDetected < UIFunctions.globaluifunctions.database.databasedepthchargedata[__instance.parentVessel.databaseshipdata.navalGunTypes[0]].weaponRange.y ) || !( __instance.sensordata.rangeYardsLastDetected > UIFunctions.globaluifunctions.database.databasedepthchargedata[__instance.parentVessel.databaseshipdata.navalGunTypes[0]].weaponRange.x ) ) {
-		//			return false;
-		//		}
-		//		if( !__instance.enemynavalguns.enabled ) {
-		//			__instance.enemynavalguns.enabled = true;
-		//			Debug.Log( "Naval Guns Enabled" );
-		//		}
-		//		__instance.transformToAttack = GameDataManager.playervesselsonlevel[0].transform;
-		//		__instance.enemynavalguns.targetPosition = GameDataManager.playervesselsonlevel[0].transform.position;
-		//		__instance.enemynavalguns.fireAtPosition = true;
-		//		for( int j = 0; j < __instance.enemynavalguns.turrets.Length; j++ ) {
-		//			if( __instance.enemynavalguns.firingPhase[j] == 0 ) {
-		//				__instance.enemynavalguns.firingPhase[j] = 1;
-		//				__instance.enemynavalguns.firingAtPlayerTimer[j] = UnityEngine.Random.Range( -4f, 0f );
-		//			}
-		//		}
-		//		return false;
-		//	}
-		//}
-
-		//[HarmonyPatch( typeof( Enemy_Guns ), "FixedUpdate" )]
-		//public class Enemy_Guns_FixedUpdate_Patch
-		//{
-		//	[HarmonyPrefix]
-		//	public static void Prefix( Enemy_Guns __instance ) {
-		//		Debug.Log( "Guns Fixed Update" );
-		//	}
-		//}
 	}
-
 }

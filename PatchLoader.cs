@@ -3,7 +3,7 @@ using HarmonyLib;
 
 namespace Cold_Waters_Expanded
 {
-	[BepInPlugin( "org.cwe.plugins.load", "Cold Waters Expanded Loader", "1.0.0.2" )]
+	[BepInPlugin( "org.cwe.plugins.load", "Cold Waters Expanded Loader", "1.0.0.3" )]
 	class PatchLoader : BaseUnityPlugin
 	{
 		void Awake() {

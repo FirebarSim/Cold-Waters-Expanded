@@ -8,16 +8,67 @@ using UnityEngine;
 
 namespace Cold_Waters_Expanded
 {
-    [BepInPlugin( "org.cwe.plugins.weapon", "Cold Waters Expanded Weapon Patches", "1.0.0.2" )]
-    class WeaponPatch
-    {
-        [HarmonyPatch( typeof( Torpedo ), "FixedUpdate" )]
-        public class Torpedo_FixedUpdate_Patch
-        {
-            [HarmonyPrefix]
-            public static bool Prefix( Torpedo __instance ) {
-				bool wasPlayerDepthControlled = false;
+    [BepInPlugin( "org.cwe.plugins.weapon", "Cold Waters Expanded Weapon Patches", "1.0.0.5" )]
+    class WeaponPatch : BaseUnityPlugin
+	{
+		static WeaponPatch weaponPatch;
+		Dictionary<DatabaseWeaponData, DatabaseWeaponDataExtension> weaponDataExtensions = new Dictionary<DatabaseWeaponData, DatabaseWeaponDataExtension>();
+		Dictionary<Torpedo, TorpedoExtension> torpedoExtensions = new Dictionary<Torpedo, TorpedoExtension>();
 
+		void Awake() {
+			weaponPatch = this;
+		}
+
+		[HarmonyPatch( typeof( TextParser ), "ReadWeaponData" )]
+		public class TextParser_ReadWeaponData_Patch
+		{
+			[HarmonyPostfix]
+			public static void Postfix( TextParser __instance ) {
+				int countWeapons = 0;
+				int countCountermeasures = 0;
+				int countDepthWeapons = 0;
+				string[] lines = __instance.OpenTextDataFile( "weapons" );
+				DatabaseWeaponDataExtension weaponDataExtension = null;
+				foreach( string line in lines ) {
+					switch( line.Split( '=' )[0] ) {
+						case "WeaponObjectReference":
+							weaponDataExtension = new DatabaseWeaponDataExtension();
+							weaponPatch.weaponDataExtensions.Add( __instance.database.databaseweapondata[countWeapons], weaponDataExtension );
+							countWeapons++;
+							break;
+						case "DepthWeaponObjectReference":
+							countDepthWeapons++;
+							break;
+						case "CountermeasureName":
+							countCountermeasures++;
+							break;
+						case "FlightProfile":
+							switch( line.Split( '=' )[1].Trim() ) {
+								case "BALLISTIC":
+									weaponDataExtension.isBallistic = true;
+									//Debug.Log( "BALLISTIC" );
+									break;
+								default:
+									weaponDataExtension.isBallistic = false;
+									break;
+							}
+							break;
+						case "PeakAltitude":
+							weaponDataExtension.ballisticCeiling = float.Parse( line.Split( '=' )[1].Trim() ) / 75.13f;
+							break;
+						default:
+							break;
+					}
+				}
+			}
+		}
+
+		[HarmonyPatch( typeof( Torpedo ), "FixedUpdate" )]
+		public class Torpedo_FixedUpdate_Patch
+		{
+			[HarmonyPrefix]
+			public static bool Prefix( Torpedo __instance ) {
+				//Debug.Log( "FixedUpdate" );
 				if( __instance.destroyTimer > 0f ) {
 					__instance.destroyTimer -= Time.deltaTime;
 					if( __instance.destroyTimer <= 0f ) {
@@ -27,11 +78,11 @@ namespace Cold_Waters_Expanded
 				if( __instance.databaseweapondata.landAttack ) {
 					__instance.terrainScanTimer += Time.deltaTime;
 					if( __instance.terrainScanTimer > 0.5f ) {
-						Traverse.Create( __instance ).Method( "ScanForTerrain" ).GetValue<bool>();
+						Traverse.Create( __instance ).Method( "ScanForTerrain" ).GetValue();
 					}
 				}
 				if( __instance.destroyMe ) {
-					Traverse.Create( __instance ).Method( "DestroyTorpedo" ).GetValue<bool>();
+					Traverse.Create( __instance ).Method( "DestroyTorpedo", true ).GetValue();
 					return false;
 				}
 				__instance.timer += Time.deltaTime;
@@ -53,18 +104,19 @@ namespace Cold_Waters_Expanded
 					float num = 5f;
 					__instance.wireTimer += Time.deltaTime;
 					if( __instance.wireTimer > num ) {
-						Traverse.Create( __instance ).Method( "CheckWire" ).GetValue<bool>();
+						Traverse.Create( __instance ).Method( "CheckWire" ).GetValue();
 						__instance.wireTimer -= num;
 					}
 				}
 				if( __instance.sensorsActive ) {
 					__instance.sortTargetsTimer += Time.deltaTime;
 					if( __instance.sortTargetsTimer > 6f ) {
-						Traverse.Create( __instance ).Method( "SortTargetsByDistance" ).GetValue<bool>();
+						Traverse.Create( __instance ).Method( "SortTargetsByDistance" ).GetValue();
 						__instance.sortTargetsTimer = 0f;
 					}
 				}
 				if( __instance.databaseweapondata.isMissile ) {
+					//Debug.Log( "   isMissile" );
 					if( __instance.shotDown ) {
 						__instance.torpedoGuidance.transform.localRotation = Quaternion.Slerp( __instance.torpedoGuidance.transform.localRotation, Quaternion.Euler( __instance.shotDownAngles.x, __instance.shotDownAngles.y, 0f ), 1f );
 						__instance.gameObject.transform.rotation = Quaternion.RotateTowards( __instance.gameObject.transform.rotation, __instance.torpedoGuidance.transform.rotation, __instance.databaseweapondata.turnRate * Time.deltaTime );
@@ -83,6 +135,7 @@ namespace Cold_Waters_Expanded
 						return false;
 					}
 					if( !__instance.isAirborne ) {
+						//Debug.Log( "   !isAirborne" );
 						__instance.torpedoGuidance.transform.localRotation = Quaternion.Slerp( __instance.torpedoGuidance.transform.localRotation, Quaternion.Euler( -5f, 0f, 0f ), 1f );
 						__instance.gameObject.transform.rotation = Quaternion.RotateTowards( __instance.gameObject.transform.rotation, __instance.torpedoGuidance.transform.rotation, __instance.databaseweapondata.turnRate * Time.deltaTime );
 						__instance.gameObject.transform.rotation = Quaternion.Slerp( __instance.gameObject.transform.rotation, Quaternion.Euler( __instance.gameObject.transform.eulerAngles.x, __instance.gameObject.transform.eulerAngles.y, 0f ), 1f );
@@ -107,6 +160,7 @@ namespace Cold_Waters_Expanded
 						if( __instance.gameObject.transform.eulerAngles.x > 350f ) {
 							__instance.gameObject.transform.rotation = Quaternion.Slerp( __instance.gameObject.transform.rotation, Quaternion.Euler( 350f, __instance.gameObject.transform.eulerAngles.y, 0f ), 1f );
 						}
+						//Debug.Log( "   Exit !isAirborne" );
 						return false;
 					}
 					if( __instance.actualCurrentSpeed < __instance.databaseweapondata.actualActiveRunSpeed ) {
@@ -114,35 +168,54 @@ namespace Cold_Waters_Expanded
 					}
 					__instance.actionTimer += Time.deltaTime;
 					if( !__instance.boosterReleased && __instance.databaseweapondata.boosterReleasedAfterSeconds > 0f && __instance.timer > __instance.databaseweapondata.boosterReleasedAfterSeconds ) {
-						Traverse.Create( __instance ).Method( "ReleaseBooster" ).GetValue<bool>();
+						Traverse.Create( __instance ).Method( "ReleaseBooster" ).GetValue();
 					}
 					if( __instance.guidanceActive ) {
-						float num2 = __instance.gameObject.transform.position.y - __instance.cruiseYValue;
-						if( num2 > -0.01f && num2 < 0.01f ) {
-							num2 = 0f;
+						//Debug.Log( "   guidanceActive" );
+						// Ballistic Trajectory Height command
+						if( weaponPatch.weaponDataExtensions[__instance.databaseweapondata].isBallistic ) {
+							if( weaponPatch.torpedoExtensions[__instance].ballisticTrajectory == null ) {
+								weaponPatch.torpedoExtensions[__instance].ballisticTrajectory = new BallisticTrajectory( weaponPatch.weaponDataExtensions[__instance.databaseweapondata].ballisticCeiling, Vector3.Distance( __instance.gameObject.transform.position, __instance.initialWaypointPosition ) );
+								//Debug.Log( "   new BallisticTrajectory" );
+								//Debug.Log( "   launchPosition: " + __instance.gameObject.transform.position.ToString() );
+								//Debug.Log( "   initialWaypointPosition: " + __instance.initialWaypointPosition.ToString() );
+								//Debug.Log( "   ballisticCeiling: " + weaponPatch.weaponDataExtensions[__instance.databaseweapondata].ballisticCeiling );
+							}
+							//Debug.Log( "   isBallistic" );
+							//Debug.Log( "   ballisticHeightTarget: " + ( 1000f + weaponPatch.torpedoExtensions[__instance].ballisticTrajectory.GetAltitude( Vector3.Distance( __instance.gameObject.transform.position, __instance.initialWaypointPosition ) ) ) );
+							__instance.cruiseYValue = 1000f + weaponPatch.torpedoExtensions[__instance].ballisticTrajectory.GetAltitude( Vector3.Distance( __instance.gameObject.transform.position, __instance.initialWaypointPosition ) );
+						}
+						float heightError = __instance.gameObject.transform.position.y - __instance.cruiseYValue;
+						if( heightError > -0.01f && heightError < 0.01f ) {
+							heightError = 0f;
 						}
 						else {
-							num2 *= 20f;
-							num2 = Mathf.Clamp( num2, 0f - __instance.databaseweapondata.maxPitchAngle, __instance.databaseweapondata.maxPitchAngle );
+							heightError *= 20f;
+							heightError = Mathf.Clamp( heightError, 0f - __instance.databaseweapondata.maxPitchAngle, __instance.databaseweapondata.maxPitchAngle );
 						}
 						__instance.torpedoGuidance.transform.LookAt( __instance.initialWaypointPosition );
 						float y = __instance.torpedoGuidance.transform.eulerAngles.y;
-						__instance.torpedoGuidance.transform.rotation = Quaternion.Slerp( __instance.torpedoGuidance.transform.rotation, Quaternion.Euler( num2, y, 0f ), 1f );
+						__instance.torpedoGuidance.transform.rotation = Quaternion.Slerp( __instance.torpedoGuidance.transform.rotation, Quaternion.Euler( heightError, y, 0f ), 1f );
 						__instance.gameObject.transform.rotation = Quaternion.RotateTowards( __instance.gameObject.transform.rotation, __instance.torpedoGuidance.transform.rotation, __instance.databaseweapondata.turnRate * Time.deltaTime );
 						__instance.gameObject.transform.rotation = Quaternion.Slerp( __instance.gameObject.transform.rotation, Quaternion.Euler( __instance.gameObject.transform.eulerAngles.x, __instance.gameObject.transform.eulerAngles.y, 0f ), 1f );
+						// Release Payload Commands
 						if( Vector3.Distance( __instance.launchPosition, __instance.gameObject.transform.position ) > __instance.distanceToWaypoint ) {
 							if( !__instance.databaseweapondata.hasPayload ) {
-								Traverse.Create( __instance ).Method( "ActivateTorpedo" ).GetValue<bool>();
+								Traverse.Create( __instance ).Method( "ActivateTorpedo" ).GetValue();
 							}
 							else if( !__instance.payloadDropped ) {
 								if( __instance.databaseweapondata.boosterReleasedAfterSeconds < 0f ) {
-									Traverse.Create( __instance ).Method( "ReleaseBooster" ).GetValue<bool>();
+									Traverse.Create( __instance ).Method( "ReleaseBooster" ).GetValue();
 								}
+								// Instantiate Payload
 								GameObject gameObject = UnityEngine.Object.Instantiate( UIFunctions.globaluifunctions.database.databaseweapondata[__instance.databaseweapondata.missilePayload].weaponObject, __instance.payloadPosition.position, __instance.gameObject.transform.rotation ) as GameObject;
+								// Retarget Camera
 								if( ManualCameraZoom.target == __instance.gameObject.transform ) {
 									ManualCameraZoom.target = gameObject.transform;
 								}
+								// Activate new GameObject
 								gameObject.SetActive( value: true );
+								// Get the Torpedo component of the Payload
 								Torpedo component = gameObject.GetComponent<Torpedo>();
 								component.databaseweapondata = UIFunctions.globaluifunctions.database.databaseweapondata[__instance.databaseweapondata.missilePayload];
 								component.guidanceActive = false;
@@ -150,12 +223,14 @@ namespace Cold_Waters_Expanded
 								component.searching = true;
 								component.vesselFiredFrom = __instance.vesselFiredFrom;
 								component.whichNavy = __instance.whichNavy;
+								// Player Payload
 								if( component.whichNavy == 0 ) {
 									int nearestVesselIndex = GetNearestVesselIndex( __instance.gameObject.transform );
 									if( nearestVesselIndex != -1 ) {
 										component.cruiseYValue = GameDataManager.enemyvesselsonlevel[nearestVesselIndex].transform.position.y;
 										component.searchYValue = GameDataManager.enemyvesselsonlevel[nearestVesselIndex].transform.position.y;
 									}
+									// Randomly Set to Passive Homing if the Torpedo supports it.
 									if( UnityEngine.Random.value > 0.5f ) {
 										for( int i = 0; i < component.databaseweapondata.homeSettings.Length; i++ ) {
 											if( component.databaseweapondata.homeSettings[i] == "PASSIVE" ) {
@@ -164,6 +239,7 @@ namespace Cold_Waters_Expanded
 										}
 									}
 								}
+								// Enemy Payload
 								else {
 									component.cruiseYValue = GameDataManager.playervesselsonlevel[0].transform.position.y;
 									component.searchYValue = GameDataManager.playervesselsonlevel[0].transform.position.y;
@@ -181,12 +257,13 @@ namespace Cold_Waters_Expanded
 						}
 					}
 					else if( __instance.sensorsActive ) {
+						Debug.Log( "   sensorsActive" );
 						if( __instance.landAttackTerminal ) {
 							float num3 = Vector3.Distance( __instance.gameObject.transform.position, __instance.targetTransform.position );
 							if( num3 < 1f ) {
 								( UnityEngine.Object.Instantiate( UIFunctions.globaluifunctions.database.shipFires[0], __instance.targetTransform.position + Vector3.up * 0.15f, Quaternion.identity ) as ParticleSystem ).transform.SetParent( UIFunctions.globaluifunctions.levelloadmanager.currentMapGeneratorInstance.transform );
 								UnityEngine.Object.Instantiate( UIFunctions.globaluifunctions.database.magazineExplosionsLand[UnityEngine.Random.Range( 0, 2 )], __instance.targetTransform.position, Quaternion.identity );
-								Traverse.Create( __instance ).Method( "DestroyTorpedo", false ).GetValue<bool>();
+								Traverse.Create( __instance ).Method( "DestroyTorpedo", false ).GetValue();
 								return false;
 							}
 							if( num3 < 5f && !__instance.eventCameraSet ) {
@@ -245,6 +322,7 @@ namespace Cold_Waters_Expanded
 						float num4 = __instance.gameObject.transform.position.y - __instance.cruiseYValue;
 						__instance.gameObject.transform.Rotate( Vector3.right * ( 0f - num4 ) * 2f );
 					}
+					//Debug.Log( "   Exit isMissile" );
 					return false;
 				}
 				if( __instance.isAirborne ) {
@@ -357,12 +435,12 @@ namespace Cold_Waters_Expanded
 					}
 					__instance.runStraight = true;
 					if( __instance.playerDepthInput != 0f ) {
-						wasPlayerDepthControlled = true;
+						weaponPatch.torpedoExtensions[__instance].wasPlayerDepthControlled = true;
 					}
 					return false;
 				}
-				if( wasPlayerDepthControlled ) {
-					wasPlayerDepthControlled = false;
+				if( weaponPatch.torpedoExtensions[__instance].wasPlayerDepthControlled ) {
+					weaponPatch.torpedoExtensions[__instance].wasPlayerDepthControlled = false;
 					__instance.cruiseYValue = __instance.gameObject.transform.position.y;
 				}
 				if( __instance.guidanceActive ) {
@@ -468,7 +546,7 @@ namespace Cold_Waters_Expanded
 				}
 				__instance.gameObject.transform.rotation = Quaternion.Slerp( __instance.gameObject.transform.rotation, Quaternion.Euler( __instance.gameObject.transform.eulerAngles.x, __instance.gameObject.transform.eulerAngles.y, 0f ), 1f );
 				return false;
-            }
+			}
 
 			public static int GetNearestVesselIndex( Transform t ) {
 				float num = 40000f;
@@ -481,6 +559,24 @@ namespace Cold_Waters_Expanded
 					}
 				}
 				return result;
+			}
+
+			[HarmonyPatch( typeof( Torpedo ), "InitialiseTorpedo" )]
+			public class Torpedo_InitialiseTorpedo_Patch
+			{
+				[HarmonyPostfix]
+				public static void Postfix( Torpedo __instance ) {
+					TorpedoExtension torpedoExtension = new TorpedoExtension();
+					//DatabaseWeaponDataExtension databaseWeaponDataExtension = weaponPatch.weaponDataExtensions[__instance.databaseweapondata];
+					weaponPatch.torpedoExtensions.Add( __instance, torpedoExtension );
+					//if( databaseWeaponDataExtension.isBallistic ) {
+					//	torpedoExtension.ballisticTrajectory = new BallisticTrajectory( databaseWeaponDataExtension.ballisticCeiling, Vector3.Distance( __instance.launchPosition, __instance.initialWaypointPosition ) );
+					//	Debug.Log( "InitialiseTorpedo" );
+					//	Debug.Log( "   launchPosition: " + __instance.launchPosition.ToString() );
+					//	Debug.Log( "   initialWaypointPosition: " + __instance.initialWaypointPosition.ToString() );
+					//	Debug.Log( "   ballisticCeiling: " + databaseWeaponDataExtension.ballisticCeiling );
+					//}
+				}
 			}
 		}
     }
