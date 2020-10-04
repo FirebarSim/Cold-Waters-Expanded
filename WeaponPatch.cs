@@ -332,7 +332,10 @@ namespace Cold_Waters_Expanded
 					if( __instance.actualCurrentSpeed < 0.5f ) {
 						__instance.gameObject.transform.Translate( Vector3.up * Time.deltaTime * -0.2f, Space.World );
 					}
-					__instance.gameObject.transform.Translate( Vector3.up * Time.deltaTime * -0.1f, Space.World );
+					// Apply Gravity - Ignore for the Ballistic weapons, they simulate it anyway
+					if( !weaponPatch.weaponDataExtensions[__instance.databaseweapondata].isBallistic ) {
+						__instance.gameObject.transform.Translate( Vector3.up * Time.deltaTime * -0.1f, Space.World );
+					}
 					float x = __instance.gameObject.transform.eulerAngles.x;
 					if( x < 88f || x > 180f ) {
 						__instance.gameObject.transform.Rotate( Vector3.right * Time.deltaTime * 10f );
@@ -408,13 +411,24 @@ namespace Cold_Waters_Expanded
 					float d = __instance.gameObject.transform.position.y - 999.9f;
 					__instance.gameObject.transform.Rotate( Vector3.right * d * 6f );
 				}
-				float num5 = __instance.gameObject.transform.position.y - __instance.cruiseYValue;
-				if( num5 > -0.01f && num5 < 0.01f ) {
-					num5 = 0f;
+				// Set the pitch commnand
+				float weaponPitchCommand = __instance.gameObject.transform.position.y - __instance.cruiseYValue;
+				// Zero if small, prevent oscillations
+				if( weaponPitchCommand > -0.01f && weaponPitchCommand < 0.01f ) {
+					weaponPitchCommand = 0f;
 				}
+				// Limit to max pitch angles
 				else {
-					num5 *= 20f;
-					num5 = Mathf.Clamp( num5, 0f - __instance.databaseweapondata.maxPitchAngle, __instance.databaseweapondata.maxPitchAngle );
+					// Wirebreak Mod
+					//num5 *= 20f;
+					//num5 = Mathf.Clamp( num5, 0f - __instance.databaseweapondata.maxPitchAngle, __instance.databaseweapondata.maxPitchAngle );
+					// Original
+					if( weaponPitchCommand > __instance.databaseweapondata.maxPitchAngle ) {
+						weaponPitchCommand = __instance.databaseweapondata.maxPitchAngle;
+					}
+					else if( weaponPitchCommand < 0f - __instance.databaseweapondata.maxPitchAngle ) {
+						weaponPitchCommand = 0f - __instance.databaseweapondata.maxPitchAngle;
+					}
 				}
 				if( __instance.playerControlling ) {
 					__instance.playerDistToWaypoint = Vector2.Distance( new Vector2( __instance.gameObject.transform.position.x, __instance.gameObject.transform.position.z ), new Vector2( __instance.initialWaypointPosition.x, __instance.initialWaypointPosition.z ) );
@@ -427,7 +441,7 @@ namespace Cold_Waters_Expanded
 						__instance.cruiseYValue = 999.98f;
 					}
 					__instance.torpedoGuidance.transform.localRotation = Quaternion.Slerp( __instance.gameObject.transform.rotation, Quaternion.Euler( 0f, 10f * __instance.playerTurnInput, 0f ), 1f );
-					__instance.torpedoGuidance.transform.rotation = Quaternion.Slerp( __instance.torpedoGuidance.transform.rotation, Quaternion.Euler( num5, __instance.torpedoGuidance.transform.eulerAngles.y, 0f ), 1f );
+					__instance.torpedoGuidance.transform.rotation = Quaternion.Slerp( __instance.torpedoGuidance.transform.rotation, Quaternion.Euler( weaponPitchCommand, __instance.torpedoGuidance.transform.eulerAngles.y, 0f ), 1f );
 					__instance.gameObject.transform.rotation = Quaternion.RotateTowards( __instance.gameObject.transform.rotation, __instance.torpedoGuidance.transform.rotation, __instance.databaseweapondata.turnRate * Time.deltaTime );
 					__instance.gameObject.transform.rotation = Quaternion.Slerp( __instance.gameObject.transform.rotation, Quaternion.Euler( __instance.gameObject.transform.eulerAngles.x, __instance.gameObject.transform.eulerAngles.y, 0f ), 1f );
 					if( __instance.playerTimeToWaypoint < 0f ) {
@@ -446,10 +460,10 @@ namespace Cold_Waters_Expanded
 				if( __instance.guidanceActive ) {
 					__instance.torpedoGuidance.transform.LookAt( __instance.initialWaypointPosition );
 					if( __instance.lockGuidance ) {
-						__instance.torpedoGuidance.transform.rotation = Quaternion.Slerp( __instance.torpedoGuidance.transform.rotation, Quaternion.Euler( num5, __instance.gameObject.transform.eulerAngles.y, 0f ), 1f );
+						__instance.torpedoGuidance.transform.rotation = Quaternion.Slerp( __instance.torpedoGuidance.transform.rotation, Quaternion.Euler( weaponPitchCommand, __instance.gameObject.transform.eulerAngles.y, 0f ), 1f );
 					}
 					else {
-						__instance.torpedoGuidance.transform.rotation = Quaternion.Slerp( __instance.torpedoGuidance.transform.rotation, Quaternion.Euler( num5, __instance.torpedoGuidance.transform.eulerAngles.y, 0f ), 1f );
+						__instance.torpedoGuidance.transform.rotation = Quaternion.Slerp( __instance.torpedoGuidance.transform.rotation, Quaternion.Euler( weaponPitchCommand, __instance.torpedoGuidance.transform.eulerAngles.y, 0f ), 1f );
 					}
 					__instance.gameObject.transform.rotation = Quaternion.RotateTowards( __instance.gameObject.transform.rotation, __instance.torpedoGuidance.transform.rotation, __instance.databaseweapondata.turnRate * Time.deltaTime );
 					__instance.gameObject.transform.rotation = Quaternion.Slerp( __instance.gameObject.transform.rotation, Quaternion.Euler( __instance.gameObject.transform.eulerAngles.x, __instance.gameObject.transform.eulerAngles.y, 0f ), 1f );
@@ -458,7 +472,7 @@ namespace Cold_Waters_Expanded
 					}
 					return false;
 				}
-				bool flag2 = Traverse.Create( __instance ).Method( "CheckTargetInSensorCone" ).GetValue<bool>();
+				bool targetInSensorCone = Traverse.Create( __instance ).Method( "CheckTargetInSensorCone" ).GetValue<bool>();
 				if( __instance.databaseweapondata.weaponType == "TORPEDO" ) {
 					__instance.pingTimer += Time.deltaTime;
 					float num6 = 10f;
@@ -471,7 +485,7 @@ namespace Cold_Waters_Expanded
 					if( __instance.pingTimer > num6 && !__instance.jammed ) {
 						Traverse.Create( __instance ).Method( "TorpedoActivePing" ).GetValue();
 						__instance.pingTimer = 0f;
-						if( flag2 && __instance.whichNavy == 0 && __instance.onWire && !__instance.passiveHoming ) {
+						if( targetInSensorCone && __instance.whichNavy == 0 && __instance.onWire && !__instance.passiveHoming ) {
 							for( int j = 0; j < GameDataManager.enemyvesselsonlevel.Length; j++ ) {
 								if( __instance.targetTransform == GameDataManager.enemyvesselsonlevel[j].transform ) {
 									UIFunctions.globaluifunctions.playerfunctions.sensormanager.solutionQualityOfContacts[j] = UIFunctions.globaluifunctions.playerfunctions.maximumPlayerTMA;
@@ -485,10 +499,10 @@ namespace Cold_Waters_Expanded
 						Traverse.Create( __instance ).Method( "DisplaySensorConeColor", false ).GetValue();
 					}
 					else {
-						Traverse.Create( __instance ).Method( "DisplaySensorConeColor", flag2 ).GetValue();
+						Traverse.Create( __instance ).Method( "DisplaySensorConeColor", targetInSensorCone ).GetValue();
 					}
 				}
-				if( flag2 ) {
+				if( targetInSensorCone ) {
 					if( !__instance.jammed ) {
 						__instance.gameObject.transform.rotation = Quaternion.RotateTowards( __instance.gameObject.transform.rotation, Quaternion.Euler( __instance.torpedoGuidance.transform.eulerAngles.x, __instance.torpedoGuidance.transform.eulerAngles.y, 0f ), __instance.databaseweapondata.turnRate * Time.deltaTime );
 						if( !__instance.onTarget ) {
@@ -533,7 +547,7 @@ namespace Cold_Waters_Expanded
 								__instance.snakeMode *= -1;
 								__instance.snakeTimer = 0f;
 							}
-							__instance.gameObject.transform.Rotate( Vector3.up * 2f * __instance.snakeMode * Time.deltaTime );
+							__instance.gameObject.transform.Rotate( Vector3.up * 10f * __instance.snakeMode * Time.deltaTime ); //Wirebreak = 2f, Fefault = 10f
 						}
 						else if( __instance.searchLeft ) {
 							__instance.gameObject.transform.Rotate( Vector3.up * -10f * Time.deltaTime );
@@ -542,9 +556,10 @@ namespace Cold_Waters_Expanded
 							__instance.gameObject.transform.Rotate( Vector3.up * 10f * Time.deltaTime );
 						}
 					}
-					__instance.gameObject.transform.rotation = Quaternion.RotateTowards( __instance.gameObject.transform.rotation, Quaternion.Euler( num5, __instance.gameObject.transform.eulerAngles.y, 0f ), __instance.databaseweapondata.turnRate * Time.deltaTime );
+					__instance.gameObject.transform.rotation = Quaternion.RotateTowards( __instance.gameObject.transform.rotation, Quaternion.Euler( weaponPitchCommand, __instance.gameObject.transform.eulerAngles.y, 0f ), __instance.databaseweapondata.turnRate * Time.deltaTime );
 				}
-				__instance.gameObject.transform.rotation = Quaternion.Slerp( __instance.gameObject.transform.rotation, Quaternion.Euler( __instance.gameObject.transform.eulerAngles.x, __instance.gameObject.transform.eulerAngles.y, 0f ), 1f );
+				// Tend towards 0 bank angle
+				__instance.gameObject.transform.rotation = Quaternion.Euler( __instance.gameObject.transform.eulerAngles.x, __instance.gameObject.transform.eulerAngles.y, 0f );
 				return false;
 			}
 
@@ -567,15 +582,7 @@ namespace Cold_Waters_Expanded
 				[HarmonyPostfix]
 				public static void Postfix( Torpedo __instance ) {
 					TorpedoExtension torpedoExtension = new TorpedoExtension();
-					//DatabaseWeaponDataExtension databaseWeaponDataExtension = weaponPatch.weaponDataExtensions[__instance.databaseweapondata];
 					weaponPatch.torpedoExtensions.Add( __instance, torpedoExtension );
-					//if( databaseWeaponDataExtension.isBallistic ) {
-					//	torpedoExtension.ballisticTrajectory = new BallisticTrajectory( databaseWeaponDataExtension.ballisticCeiling, Vector3.Distance( __instance.launchPosition, __instance.initialWaypointPosition ) );
-					//	Debug.Log( "InitialiseTorpedo" );
-					//	Debug.Log( "   launchPosition: " + __instance.launchPosition.ToString() );
-					//	Debug.Log( "   initialWaypointPosition: " + __instance.initialWaypointPosition.ToString() );
-					//	Debug.Log( "   ballisticCeiling: " + databaseWeaponDataExtension.ballisticCeiling );
-					//}
 				}
 			}
 		}

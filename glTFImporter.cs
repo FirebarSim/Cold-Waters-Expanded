@@ -53,9 +53,10 @@ namespace Cold_Waters_Expanded
                         for( int i = 0; i < controlPoints.Count; i++ ) {
                             // calculate the control points in world space and save them to file
                             var cp = transformGlobal * nodeInverseTransform * controlPoints[i];
-                            verts.Add( conversionFactor * ( new Vector3( (float) cp.x, (float) cp.y, (float) cp.z ) ) );
+                            //verts.Add( conversionFactor * ( new Vector3( (float) cp.x, (float) cp.y * -1f, (float) cp.z ) ) );
+                            verts.Add( conversionFactor * ( new Vector3( (float) cp.x * -1f, (float) cp.y, (float) cp.z ) ) );
                             var np = transformGlobal * nodeInverseTransform * normalPoints.Data[i];
-                            norms.Add( conversionFactor * ( new Vector3( (float) np.x, (float) np.y, (float) np.z ) ) );
+                            norms.Add( conversionFactor * ( new Vector3( (float) np.x * -1f, (float) np.y, (float) np.z ) ) );
                             uvws.Add( new Vector2( (float) uvwPoints.Data[i].x, (float) uvwPoints.Data[i].y ) );
                         }
                         // write triangle indices
@@ -81,9 +82,10 @@ namespace Cold_Waters_Expanded
                             for( int i = 0; i < controlPoints.Count; i++ ) {
                                 // calculate the control points in world space and save them to file
                                 var cp = transformGlobal * nodeInverseTransform * controlPoints[i];
-                                verts.Add( conversionFactor * ( new Vector3( (float) cp.x, (float) cp.y, (float) cp.z ) ) );
+                                //verts.Add( conversionFactor * ( new Vector3( (float) cp.x, (float) cp.y, (float) cp.z ) ) );
+                                verts.Add( conversionFactor * ( new Vector3( (float) cp.x * -1f, (float) cp.y, (float) cp.z ) ) );
                                 var np = transformGlobal * nodeInverseTransform * normalPoints.Data[i];
-                                norms.Add( new Vector3( (float) np.x, (float) np.y, (float) np.z ) );
+                                norms.Add( new Vector3( (float) np.x * -1f, (float) np.y, (float) np.z ) );
                                 uvws.Add( conversionFactor * ( new Vector2( (float) uvwPoints.Data[i].x, (float) uvwPoints.Data[i].y ) ) );
                             }
                             // write triangle indices
@@ -98,7 +100,7 @@ namespace Cold_Waters_Expanded
                 outputMesh.vertices = verts.ToArray();
                 outputMesh.normals = norms.ToArray();
                 outputMesh.uv = uvws.ToArray();
-                outputMesh.triangles = tris.ToArray();
+                outputMesh.triangles = tris.ToArray().Reverse().ToArray();
                 outputMesh.RecalculateBounds();
                 meshes.Add( outputMesh );
             }

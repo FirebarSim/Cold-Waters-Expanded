@@ -12,7 +12,7 @@ using UnityEngine.SocialPlatforms;
 
 namespace Cold_Waters_Expanded
 {
-	[BepInPlugin( "org.cwe.plugins.import", "Cold Waters Expanded Import Patches", "1.0.0.4" )]
+	[BepInPlugin( "org.cwe.plugins.import", "Cold Waters Expanded Import Patches", "1.0.0.5" )]
 	public class ImporterPatch : BaseUnityPlugin
 	{
 
@@ -82,6 +82,7 @@ namespace Cold_Waters_Expanded
 				string filename = Path.Combine( "vessels", vesselPrefabRef );
 				string[] array = UIFunctions.globaluifunctions.textparser.OpenTextDataFile( filename );
 				bool customSurfaceShip = false;
+				bool isCWEModel = false;
 				foreach( var line in array ) {
 					switch( line.Split( '=' )[0] ) {
 						case "ShipType":
@@ -90,14 +91,19 @@ namespace Cold_Waters_Expanded
 							}
 							break;
 						case "ModelFile":
-							if( !line.Split( '=' )[1].Trim().Contains( "." ) ) {
-								return true; //break out to the normal method at this point if it isn't a custom model file
+							if( line.Split( '=' )[1].Trim().Contains( "." ) ) {
+								//return true; //break out to the normal method at this point if it isn't a custom model file
+								isCWEModel = true;
 							}
 							break;
 						default:
 							break;
 					}
 				}
+				//Debug.Log( "isCWE?: " + isCWEModel );
+                if( isCWEModel == false ) {
+					return true;
+                }
 				Debug.Log( "Custom Vessel: " + vesselPrefabRef );
 				patcher.customVessels.Add( activeVessel );
 				// Continue with custom logic
@@ -107,6 +113,7 @@ namespace Cold_Waters_Expanded
 				Vector3 ciwsBarrelOffset = Vector3.zero;
 				Material material = null;
 				__instance.currentMesh = null;
+				__instance.allMeshes = null;
 				GameObject gameObject = null;
 				if( !playerControlled ) {
 					UnityEngine.Object.Destroy( activeVessel.submarineFunctions.gameObject );
@@ -244,10 +251,11 @@ namespace Cold_Waters_Expanded
 					}
 					switch( dataLineArray[0] ) {
 						case "ModelFile": {
+								//Debug.Log( __instance.allMeshes.Length );
 								__instance.allMeshes = GetModel( dataLineArray[1].Trim() );
-								if( !dataLineArray[1].Trim().Contains( "." ) ) {
-									return true; //break out to the normal method at this point if it isn't a custom model file
-								}
+								//if( !dataLineArray[1].Trim().Contains( "." ) ) {
+								//	return true; //break out to the normal method at this point if it isn't a custom model file
+								//}
 								string[] array15 = dataLineArray[1].Trim().Split( '/' );
 								str = array15[array15.Length - 1].Replace(".gltf","");
 								break;
