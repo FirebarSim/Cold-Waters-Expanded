@@ -21,7 +21,7 @@ Type = MonoBehaviour
 # Default value: .cctor
 Method = .cctor
 ```
-* Download the latest CWE release .zip file
+* Download the latest CWE release .zip file from https://github.com/FirebarSim/Cold-Waters-Expanded/releases
 * Extract the CWE .zip folder to `Cold Waters\BepInEx\plugins`
 * Verify filestructure `Cold Waters\BepInEx\plugins\Cold Waters Expanded\` contains the Mod files.
 * Run Cold Waters - refer to the Output Log for errors.
