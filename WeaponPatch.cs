@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Cold_Waters_Expanded
 {
-    [BepInPlugin( "org.cwe.plugins.weapon", "Cold Waters Expanded Weapon Patches", "1.0.0.5" )]
+    [BepInPlugin( "org.cwe.plugins.weapon", "Cold Waters Expanded Weapon Patches", "1.0.0.6" )]
     class WeaponPatch : BaseUnityPlugin
 	{
 		static WeaponPatch weaponPatch;

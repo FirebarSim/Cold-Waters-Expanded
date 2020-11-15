@@ -12,7 +12,7 @@ using UnityEngine.SocialPlatforms;
 
 namespace Cold_Waters_Expanded
 {
-	[BepInPlugin( "org.cwe.plugins.import", "Cold Waters Expanded Import Patches", "1.0.0.5" )]
+	[BepInPlugin( "org.cwe.plugins.import", "Cold Waters Expanded Import Patches", "1.0.0.7" )]
 	public class ImporterPatch : BaseUnityPlugin
 	{
 
@@ -25,7 +25,20 @@ namespace Cold_Waters_Expanded
 		}
 
 		static Mesh[] GetModel( string modelPath ) {
-			if( modelPath.Length > 0 && modelPath.Contains( ".gltf" ) ) {
+			if( modelPath.Length > 0 && modelPath.Contains( ".unity3d" ) ) {
+				Debug.Log( "Loading custom model: " + modelPath );
+				AssetBundle assetBundle = AssetBundle.LoadFromFile( Application.streamingAssetsPath + "/bundles/" + modelPath.Trim() );
+     //           foreach( string assetName in assetBundle.GetAllAssetNames() ) {
+					//Debug.Log( "Asset Name: " + assetName );
+     //           }
+				Mesh[] meshes = assetBundle.LoadAllAssets<Mesh>();
+     //           foreach( Mesh mesh in meshes ) {
+					//Debug.Log( "Mesh Name: " + mesh.name );
+     //           }
+				assetBundle.Unload( false );
+				return meshes;
+			}
+			else if( modelPath.Length > 0 && modelPath.Contains( ".gltf" ) ) {
 				Debug.Log( "Loading custom model: " + modelPath );
 				return glTFImporter.GetMeshes( Application.streamingAssetsPath + "/override/" + modelPath.Trim() );
 			}
@@ -81,15 +94,15 @@ namespace Cold_Waters_Expanded
 				// Check if applying custom logic
 				string filename = Path.Combine( "vessels", vesselPrefabRef );
 				string[] array = UIFunctions.globaluifunctions.textparser.OpenTextDataFile( filename );
-				bool customSurfaceShip = false;
+				//bool customSurfaceShip = false;
 				bool isCWEModel = false;
 				foreach( var line in array ) {
 					switch( line.Split( '=' )[0] ) {
-						case "ShipType":
-							if( line.Split( '=' )[1].Trim() != "SUBMARINE" ) {
-								customSurfaceShip = true;
-							}
-							break;
+						//case "ShipType":
+						//	if( line.Split( '=' )[1].Trim() != "SUBMARINE" ) {
+						//		customSurfaceShip = true;
+						//	}
+						//	break;
 						case "ModelFile":
 							if( line.Split( '=' )[1].Trim().Contains( "." ) ) {
 								//return true; //break out to the normal method at this point if it isn't a custom model file
@@ -207,15 +220,15 @@ namespace Cold_Waters_Expanded
 						activeVessel.vesselmovement.weaponSource.tubeParticleEffects = new Vector3[activeVessel.databaseshipdata.torpedoConfig.Length];
 					}
 					activeVessel.playercontrolled = true;
-					if( customSurfaceShip ) {
-						activeVessel.isSubmarine = false;
-						activeVessel.vesselmovement.isSubmarine = false;
-					}
-					else {
+					//if( customSurfaceShip ) {
+					//	activeVessel.isSubmarine = false;
+					//	activeVessel.vesselmovement.isSubmarine = false;
+					//}
+					//else {
 						activeVessel.isSubmarine = true;
 						activeVessel.vesselmovement.isSubmarine = true;
 						activeVessel.vesselmovement.planes = new Transform[2];
-					}
+					//}
 					activeVessel.vesselmovement.telegraphValue = 2;
 				}
 				int countProps = 0;
@@ -432,6 +445,42 @@ namespace Cold_Waters_Expanded
 								}
 							}
 							activeVessel.vesselmovement.planes[1] = gameObject.transform;
+							break;
+						case "MeshXPlanes":
+                            if( !dataLineArray[1].Trim().Contains( "," ) ) {
+                                gameObject = Traverse.Create( __instance ).Method( "SetupMesh", new object[] { meshHolder, meshPosition, meshRotation, material, dataLineArray[1].Trim() } ).GetValue<GameObject>();
+                                //gameObject = new GameObject();
+                                //gameObject.transform.SetParent( meshHolder, false );
+                                //gameObject.transform.localPosition = meshPosition;
+
+                                //gameObject.AddComponent<MeshRenderer>().sharedMaterial = material;
+                                //gameObject.AddComponent<MeshFilter>().mesh = Traverse.Create( __instance ).Method( "GetMesh", dataLineArray[1].Trim() ).GetValue<Mesh>();
+                                //gameObject.transform.localRotation = Quaternion.Euler( meshRotation );
+                            }
+                            else {
+                                // Damage Meshes
+                                string[] array21 = dataLineArray[1].Trim().Split( ',' );
+                                gameObject = Traverse.Create( __instance ).Method( "SetupMesh", new object[] { meshHolder, meshPosition, meshRotation, material, array21[0].Trim() } ).GetValue<GameObject>();
+                                if( array21[1] == "HIDE" ) {
+                                    hiddenObjectsList.Add( gameObject );
+                                }
+                                else {
+                                    damageMeshFilters.Add( gameObject.GetComponent<MeshFilter>() );
+                                    damageMeshes.Add( Traverse.Create( __instance ).Method( "GetMesh", array21[1].Trim() ).GetValue<Mesh>() );
+                                }
+                            }
+                            GameObject rudderObject = new GameObject();
+                            rudderObject.transform.SetParent( meshHolder );
+                            listRudderTransforms.Add( rudderObject.transform );
+							XPlane xPlaneController = gameObject.AddComponent<XPlane>();
+							if( activeVessel.vesselmovement.planes[1] == null ) {
+								GameObject sternplaneObject = new GameObject();
+								sternplaneObject.transform.SetParent( meshHolder );
+								activeVessel.vesselmovement.planes[1] = sternplaneObject.transform;
+							}
+							xPlaneController.rudderTransform = rudderObject.transform;
+							xPlaneController.sternPlaneTransform = activeVessel.vesselmovement.planes[1];
+
 							break;
 						case "MastHeight":
 							if( playerControlled ) {

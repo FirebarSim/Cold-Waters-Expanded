@@ -1,5 +1,8 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
 
 namespace Cold_Waters_Expanded
 {
