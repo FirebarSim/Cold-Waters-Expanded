@@ -17,31 +17,27 @@ namespace Cold_Waters_Expanded
 	{
 
 		static ImporterPatch patcher;
-
 		List<Vessel> customVessels = new List<Vessel>();
+		Dictionary<string, AssetBundle> assetBundles = new Dictionary<string, AssetBundle>();
 
 		void Awake() {
 			patcher = this;
 		}
 
 		static Mesh[] GetModel( string modelPath ) {
-			if( modelPath.Length > 0 && modelPath.Contains( ".unity3d" ) ) {
-				Debug.Log( "Loading custom model: " + modelPath );
-				AssetBundle assetBundle = AssetBundle.LoadFromFile( Application.streamingAssetsPath + "/bundles/" + modelPath.Trim() );
-     //           foreach( string assetName in assetBundle.GetAllAssetNames() ) {
-					//Debug.Log( "Asset Name: " + assetName );
-     //           }
-				Mesh[] meshes = assetBundle.LoadAllAssets<Mesh>();
-     //           foreach( Mesh mesh in meshes ) {
-					//Debug.Log( "Mesh Name: " + mesh.name );
-     //           }
-				assetBundle.Unload( false );
-				return meshes;
-			}
-			else if( modelPath.Length > 0 && modelPath.Contains( ".gltf" ) ) {
+            if( modelPath.Length > 0 && modelPath.Contains( ".gltf" ) ) {
 				Debug.Log( "Loading custom model: " + modelPath );
 				return glTFImporter.GetMeshes( Application.streamingAssetsPath + "/override/" + modelPath.Trim() );
 			}
+            else if( modelPath.Contains( ".unity3d" ) ) {
+                AssetBundle assetBundle = AssetBundle.LoadFromFile( Application.streamingAssetsPath + "/override/" + modelPath );
+				if( assetBundle != null ) {
+					Debug.Log( "AssetBundle Loaded from: " + "/override/" + modelPath );
+				}
+				Mesh[] allMeshes = assetBundle.LoadAllAssets<Mesh>();
+				assetBundle.Unload( false );
+				return allMeshes;
+            }
 			else if( modelPath.Length > 0 ) {
 				return Resources.LoadAll<Mesh>( modelPath.Trim() );
 			}
@@ -53,38 +49,48 @@ namespace Cold_Waters_Expanded
 
 		static Material GetMaterial( string materialPathName ) {
 			if( materialPathName == "FALSE" ) {
-				//Shader shader = Shader.Find( shaderReference );
-				//Material material = new Material( shader );
 				Material material = new Material( Resources.Load( "ships/usn_ssn_skipjack/usn_ssn_skipjack_mat" ) as Material );
 				material.SetTexture( "_MainTex", null );
 				material.SetTexture( "_SpecTex", null );
 				material.SetTexture( "_BumpMap", null );
 				return material;
 			}
+            else if( materialPathName.Contains(".unity3d") ) {
+				AssetBundle assetBundle = AssetBundle.LoadFromFile( Application.streamingAssetsPath + "/override/" + materialPathName.Split(',')[0] );
+				Material material = assetBundle.LoadAsset<Material>( materialPathName.Split( ',' )[1] );
+				assetBundle.Unload( false );
+				return material;
+			}
 			else if( materialPathName.Contains( ".mtl" ) ) {
 				try {
-					//Material material = new Material( Resources.Load( "ships/usn_ssn_skipjack/usn_ssn_skipjack_mat" ) as Material );
-					//Debug.Log( Application.streamingAssetsPath + "/override/" + materialPathName );
-					string json = File.ReadAllText( Application.streamingAssetsPath + "/override/" + materialPathName );
-					//Debug.Log( json );
+					string json = File.ReadAllText( Application.streamingAssetsPath + "/override/" + materialPathName.Split( ',' )[0] );
 					Material material = JsonUtility.FromJson<SerialiseMaterial>( json ).GetMaterial();
 					Debug.Log( material.ToString() );
 					return material;
 				}
 				catch( Exception e ) {
 					Debug.Log( e.ToString() );
-					//Shader shader = Shader.Find( "Legacy Shaders/Transparent/Bumped Specular" );
-					//Material material = new Material( shader );
 					Material material = new Material( Resources.Load( "ships/usn_ssn_skipjack/usn_ssn_skipjack_mat" ) as Material );
 					material.SetTexture( "_MainTex", null );
 					material.SetTexture( "_SpecTex", null );
 					material.SetTexture( "_BumpMap", null );
 					return material;
 				}
-				
 			}
 			return Resources.Load( materialPathName ) as Material;
 		}
+
+		//static object GetAssetFromBundle( string assetPath ) {
+			//if( assetPath.Contains( ".unity3d" ) ) {
+				//AssetBundle assetBundle = AssetBundle.LoadFromFile( Application.streamingAssetsPath + "/override/" + assetPath.Split( ',' )[0] );
+				//object asset = assetBundle.LoadAsset( assetPath.Split( ',' )[1] );
+				//assetBundle.Unload( false );
+				//return asset;
+			//}
+		    //else {
+				//return Resources.Load( assetPath );
+			//}
+		//}
 
 		[HarmonyPatch( typeof( VesselBuilder ), "CreateAndPlaceMeshes" )]
 		public class VesselBuilder_CreateAndPlaceMeshes_Patch
@@ -94,18 +100,11 @@ namespace Cold_Waters_Expanded
 				// Check if applying custom logic
 				string filename = Path.Combine( "vessels", vesselPrefabRef );
 				string[] array = UIFunctions.globaluifunctions.textparser.OpenTextDataFile( filename );
-				//bool customSurfaceShip = false;
 				bool isCWEModel = false;
 				foreach( var line in array ) {
 					switch( line.Split( '=' )[0] ) {
-						//case "ShipType":
-						//	if( line.Split( '=' )[1].Trim() != "SUBMARINE" ) {
-						//		customSurfaceShip = true;
-						//	}
-						//	break;
 						case "ModelFile":
 							if( line.Split( '=' )[1].Trim().Contains( "." ) ) {
-								//return true; //break out to the normal method at this point if it isn't a custom model file
 								isCWEModel = true;
 							}
 							break;
@@ -113,11 +112,10 @@ namespace Cold_Waters_Expanded
 							break;
 					}
 				}
-				//Debug.Log( "isCWE?: " + isCWEModel );
                 if( isCWEModel == false ) {
 					return true;
                 }
-				Debug.Log( "Custom Vessel: " + vesselPrefabRef );
+				Debug.Log( "Custom Vessel: " + Path.GetFileNameWithoutExtension(vesselPrefabRef) );
 				patcher.customVessels.Add( activeVessel );
 				// Continue with custom logic
 				Transform meshHolder = activeVessel.meshHolder;
@@ -220,15 +218,9 @@ namespace Cold_Waters_Expanded
 						activeVessel.vesselmovement.weaponSource.tubeParticleEffects = new Vector3[activeVessel.databaseshipdata.torpedoConfig.Length];
 					}
 					activeVessel.playercontrolled = true;
-					//if( customSurfaceShip ) {
-					//	activeVessel.isSubmarine = false;
-					//	activeVessel.vesselmovement.isSubmarine = false;
-					//}
-					//else {
-						activeVessel.isSubmarine = true;
-						activeVessel.vesselmovement.isSubmarine = true;
-						activeVessel.vesselmovement.planes = new Transform[2];
-					//}
+					activeVessel.isSubmarine = true;
+					activeVessel.vesselmovement.isSubmarine = true;
+					activeVessel.vesselmovement.planes = new Transform[2];
 					activeVessel.vesselmovement.telegraphValue = 2;
 				}
 				int countProps = 0;
@@ -251,8 +243,9 @@ namespace Cold_Waters_Expanded
 				List<Mesh> damageMeshes = new List<Mesh>();
 				List<MeshFilter> damageMeshFilters = new List<MeshFilter>();
 				List<GameObject> hiddenObjectsList = new List<GameObject>();
+				//AssetBundle assetBundle = null;
 				activeVessel.vesselmovement.submarineFoamDurations = new float[2];
-				string str = string.Empty;
+				string str = Path.GetFileNameWithoutExtension( vesselPrefabRef );
 				bool flag = false;
 				for( int i = 0; i < array.Length; i++ ) {
 					string[] dataLineArray = array[i].Split( '=' );
@@ -263,16 +256,29 @@ namespace Cold_Waters_Expanded
 						continue;
 					}
 					switch( dataLineArray[0] ) {
-						case "ModelFile": {
-								//Debug.Log( __instance.allMeshes.Length );
-								__instance.allMeshes = GetModel( dataLineArray[1].Trim() );
-								//if( !dataLineArray[1].Trim().Contains( "." ) ) {
-								//	return true; //break out to the normal method at this point if it isn't a custom model file
-								//}
-								string[] array15 = dataLineArray[1].Trim().Split( '/' );
-								str = array15[array15.Length - 1].Replace(".gltf","");
-								break;
-							}
+						case "ModelFile":
+							__instance.allMeshes = GetModel( dataLineArray[1].Trim() );
+							break;
+						//case "AssetBundle":
+						//	if( !patcher.assetBundles.ContainsKey( dataLineArray[1].Trim() ) ) {
+						//		assetBundle = AssetBundle.LoadFromFile( Application.streamingAssetsPath + "/override/" + dataLineArray[1].Trim() );
+						//		patcher.assetBundles.Add( dataLineArray[1].Trim(), assetBundle );
+						//	}
+						//	else {
+						//		assetBundle = patcher.assetBundles[dataLineArray[1].Trim()];
+						//	}
+						//	//assetBundle = AssetBundle.LoadFromFile( Application.streamingAssetsPath + "/override/" + dataLineArray[1].Trim() );
+      //                      if( assetBundle != null ) {
+						//		Debug.Log( "AssetBundle Loaded from: " + "/override/" + dataLineArray[1].Trim() );
+						//		foreach( string assetName in assetBundle.GetAllAssetNames() ) {
+						//			Debug.Log( "   Asset: " + assetName );
+						//		}
+						//		__instance.allMeshes = assetBundle.LoadAllAssets<Mesh>();
+      //                          foreach( Mesh mesh in __instance.allMeshes ) {
+						//			Debug.Log( "   Mesh: " + mesh.name );
+      //                          }
+						//	}
+						//	break;
 						case "MeshPosition":
 							meshPosition = UIFunctions.globaluifunctions.textparser.PopulateVector3( dataLineArray[1].Trim() );
 							break;
@@ -280,7 +286,19 @@ namespace Cold_Waters_Expanded
 							meshRotation = UIFunctions.globaluifunctions.textparser.PopulateVector3( dataLineArray[1].Trim() );
 							break;
 						case "Material":
-							material = GetMaterial( dataLineArray[1].Trim() );
+                            //                     if( assetBundle != null ) {
+                            //	Material tempMat = assetBundle.LoadAsset<Material>( dataLineArray[1].Trim() );
+                            //                         if( tempMat != null ) {
+                            //		material = tempMat;
+                            //                         }
+                            //                         else {
+                            //		material = GetMaterial( dataLineArray[1].Trim() );
+                            //	}
+                            //                     }
+                            //                     else {
+                            //	material = GetMaterial( dataLineArray[1].Trim() );
+                            //}
+                            material = GetMaterial( dataLineArray[1].Trim() );
 							break;
 						case "MaterialTextures":
 							if( material != null ) {
@@ -320,6 +338,16 @@ namespace Cold_Waters_Expanded
 								gameObject.GetComponent<MeshRenderer>().receiveShadows = false;
 								gameObject.transform.parent.parent.gameObject.AddComponent<Whale_AI>().parentVessel = activeVessel;
 							}
+							break;
+						case "MeshVisibility":
+							MeshVisibility mv = gameObject.AddComponent<MeshVisibility>();
+							mv.vessel = activeVessel;
+							mv.conditionString = dataLineArray[1].Trim();
+							break;
+						case "MeshTranslate":
+							MeshAnimate ma = gameObject.AddComponent<MeshAnimate>();
+							ma.vessel = activeVessel;
+							ma.conditionString = dataLineArray[1].Trim();
 							break;
 						case "MeshLights":
 							if( !GameDataManager.isNight ) {
@@ -449,13 +477,6 @@ namespace Cold_Waters_Expanded
 						case "MeshXPlanes":
                             if( !dataLineArray[1].Trim().Contains( "," ) ) {
                                 gameObject = Traverse.Create( __instance ).Method( "SetupMesh", new object[] { meshHolder, meshPosition, meshRotation, material, dataLineArray[1].Trim() } ).GetValue<GameObject>();
-                                //gameObject = new GameObject();
-                                //gameObject.transform.SetParent( meshHolder, false );
-                                //gameObject.transform.localPosition = meshPosition;
-
-                                //gameObject.AddComponent<MeshRenderer>().sharedMaterial = material;
-                                //gameObject.AddComponent<MeshFilter>().mesh = Traverse.Create( __instance ).Method( "GetMesh", dataLineArray[1].Trim() ).GetValue<Mesh>();
-                                //gameObject.transform.localRotation = Quaternion.Euler( meshRotation );
                             }
                             else {
                                 // Damage Meshes
@@ -1207,6 +1228,7 @@ namespace Cold_Waters_Expanded
 				if( listMeshColliders.Count > 0 ) {
 					activeVessel.superstructureColliders = listMeshColliders.ToArray();
 				}
+				//assetBundle.Unload( false );
 				meshHolder = null;
 				material = null;
 				gameObject = null;
@@ -1229,6 +1251,7 @@ namespace Cold_Waters_Expanded
 				Transform transform = weaponTemplate.transform;
 				__instance.currentMesh = null;
 				GameObject gameObject = null;
+				//AssetBundle assetBundle = null;
 				float speed = 0f;
 				int countProps = 0;
 				if( UIFunctions.globaluifunctions.database.databaseweapondata[weaponID].weaponType == "MISSILE" ) {
@@ -1237,14 +1260,14 @@ namespace Cold_Waters_Expanded
 				bool flag = false;
 				bool flag2 = false;
 				string[] array = UIFunctions.globaluifunctions.textparser.OpenTextDataFile( "weapons" );
-				bool isCustom = false;
+				//bool isCustom = false;
 				for( int i = 0; i < array.Length; i++ ) {
 					string[] array2 = array[i].Split( '=' );
 					if( array2[0].Trim() == "WeaponObjectReference" ) {
 						if( array2[1].Trim() == weaponPrefabRef ) {
 							flag = true;
 						}
-						isCustom = false;
+						//isCustom = false;
 					}
 					else if( array2[0].Trim() == "[Model]" ) {
 						flag2 = true;
@@ -1258,9 +1281,6 @@ namespace Cold_Waters_Expanded
 					switch( array2[0] ) {
 						case "ModelFile":
 							__instance.allMeshes = GetModel( array2[1].Trim() );
-							if( array2[1].Trim().Contains( "." ) ) {
-								isCustom = true;
-							}
 							break;
 						case "MeshPosition":
 							localPosition = UIFunctions.globaluifunctions.textparser.PopulateVector3( array2[1].Trim() );
@@ -1306,29 +1326,13 @@ namespace Cold_Waters_Expanded
 							speed = float.Parse( array2[1].Trim() );
 							break;
 						case "MeshWeaponProp":
-							if( isCustom ) {
-								component.torpedoPropMeshes[countProps].transform.localPosition = localPosition;
-								component.torpedoPropMeshes[countProps].transform.localRotation = Quaternion.Euler( -90f, 0f, 0f );
-								component.torpedoPropMeshes[countProps].transform.localScale = localScale;
-								Destroy( component.torpedoPropMeshes[countProps].GetComponent<MeshFilter>() );
-								Destroy( component.torpedoPropMeshes[countProps].GetComponent<MeshRenderer>() );
-								GameObject goProp = new GameObject();
-								goProp.transform.position = component.torpedoPropMeshes[countProps].transform.parent.position;
-								goProp.AddComponent<MeshFilter>().sharedMesh = Traverse.Create( __instance ).Method( "GetMesh", array2[1].Trim() ).GetValue<Mesh>();
-								goProp.AddComponent<MeshRenderer>().sharedMaterial = material;
-								goProp.transform.SetParent( component.torpedoPropMeshes[countProps].transform );
-								component.propRotations[countProps].speed = speed;
-								countProps++;
-							}
-							else {
-								component.torpedoPropMeshes[countProps].GetComponent<MeshFilter>().mesh = Traverse.Create( __instance ).Method( "GetMesh", array2[1].Trim() ).GetValue<Mesh>();
-								component.torpedoPropMeshes[countProps].GetComponent<MeshRenderer>().sharedMaterial = material;
-								component.torpedoPropMeshes[countProps].transform.localPosition = localPosition;
-								component.torpedoPropMeshes[countProps].transform.localScale = localScale;
-								component.torpedoPropMeshes[countProps].transform.localRotation = Quaternion.Slerp( Quaternion.identity, Quaternion.Euler( -90f, 0f, 0f ), 1f );
-								component.propRotations[countProps].speed = speed;
-								countProps++;
-							}
+							component.torpedoPropMeshes[countProps].GetComponent<MeshFilter>().mesh = Traverse.Create( __instance ).Method( "GetMesh", array2[1].Trim() ).GetValue<Mesh>();
+							component.torpedoPropMeshes[countProps].GetComponent<MeshRenderer>().sharedMaterial = material;
+							component.torpedoPropMeshes[countProps].transform.localPosition = localPosition;
+							component.torpedoPropMeshes[countProps].transform.localScale = localScale;
+							component.torpedoPropMeshes[countProps].transform.localRotation = Quaternion.Slerp( Quaternion.identity, Quaternion.Euler( -90f, 0f, 0f ), 1f );
+							component.propRotations[countProps].speed = speed;
+							countProps++;
 							break;
 						case "MeshMissileBooster":
 							component.boosterMesh.GetComponent<MeshFilter>().mesh = Traverse.Create( __instance ).Method( "GetMesh", array2[1].Trim() ).GetValue<Mesh>();
@@ -1393,12 +1397,174 @@ namespace Cold_Waters_Expanded
 							component.parachuteTransform.localPosition = localPosition;
 							break;
 					}
+					//assetBundle.Unload( false );
 				}
 				return false;
 			}
 		}
 
-		[HarmonyPatch( typeof( Enemy_AntiMissileGuns ), "InitialiseEnemyMissileDefense" )]
+		[HarmonyPatch( typeof( VesselBuilder ), "CreateAndPlaceAircraftMeshes" )]
+		public class VesselBuilder_CreateAndPlaceAircraftMeshes_Patch
+		{
+			[HarmonyPrefix]
+			public static void Prefix( VesselBuilder __instance, GameObject aircraftTemplate, int aircraftID, bool isHelicopter, string aircraftPrefabRef ) {
+				Aircraft aircraft = null;
+				Helicopter helicopter = null;
+				if( isHelicopter ) {
+					helicopter = aircraftTemplate.GetComponent<Helicopter>();
+					helicopter.databaseaircraftdata = UIFunctions.globaluifunctions.database.databaseaircraftdata[aircraftID];
+					if( helicopter.databaseaircraftdata.passiveSonarID >= 0 || helicopter.databaseaircraftdata.passiveSonarID >= 0 ) {
+						helicopter.sonarLine.gameObject.SetActive( true );
+					}
+				}
+				else {
+					aircraft = aircraftTemplate.GetComponent<Aircraft>();
+					aircraft.databaseaircraftdata = UIFunctions.globaluifunctions.database.databaseaircraftdata[aircraftID];
+				}
+				Transform transform = null;
+				transform = ( ( !isHelicopter ) ? aircraft.meshHolder : aircraftTemplate.transform );
+				List<GameObject> list = new List<GameObject>();
+				Vector3 meshPosition = Vector3.zero;
+				Vector3 meshRotation = Vector3.zero;
+				Material material = null;
+				__instance.currentMesh = null;
+				GameObject gameObject = null;
+				float speed = 0f;
+				bool flag = false;
+				bool flag2 = false;
+				string[] array = UIFunctions.globaluifunctions.textparser.OpenTextDataFile( "aircraft" );
+				for( int i = 0; i < array.Length; i++ ) {
+					string[] array2 = array[i].Split( '=' );
+					if( array2[0].Trim() == "AircraftObjectReference" ) {
+						if( array2[1].Trim() == aircraftPrefabRef ) {
+							flag = true;
+						}
+					}
+					else if( array2[0].Trim() == "[Model]" ) {
+						flag2 = true;
+					}
+					else if( array2[0].Trim() == "[/Model]" && flag ) {
+						break;
+					}
+					if( !flag2 || !flag ) {
+						continue;
+					}
+					switch( array2[0] ) {
+						case "ModelFile":
+							__instance.allMeshes = GetModel( array2[1].Trim() );
+							break;
+						case "MeshPosition":
+							meshPosition = UIFunctions.globaluifunctions.textparser.PopulateVector3( array2[1].Trim() );
+							break;
+						case "MeshRotation":
+							meshRotation = UIFunctions.globaluifunctions.textparser.PopulateVector3( array2[1].Trim() );
+							break;
+						case "Material":
+							material = GetMaterial( array2[1].Trim() );
+							break;
+						case "MaterialTextures":
+							if( material != null ) {
+								string[] array3 = array2[1].Trim().Split( ',' );
+								material.SetTexture( "_MainTex", UIFunctions.globaluifunctions.textparser.GetTexture( array3[0] ) );
+								if( array3.Length > 1 ) {
+									material.SetTexture( "_SpecTex", UIFunctions.globaluifunctions.textparser.GetTexture( array3[1] ) );
+								}
+								if( array3.Length > 2 ) {
+									material.SetTexture( "_BumpMap", UIFunctions.globaluifunctions.textparser.GetTexture( array3[2] ) );
+								}
+							}
+							break;
+						case "MeshAircraftBody":
+							gameObject = Traverse.Create( __instance ).Method( "SetupMesh", new object[] { transform, meshPosition, meshRotation, material, array2[1].Trim() } ).GetValue<GameObject>(); //SetupMesh( transform, meshPosition, meshRotation, material, array2[1].Trim() );
+							if( isHelicopter ) {
+								helicopter.helibody = gameObject.transform;
+								helicopter.sonarLine.transform.SetParent( gameObject.transform );
+								helicopter.raycastPosition.SetParent( gameObject.transform );
+								helicopter.raycastPosition.localPosition = Vector3.zero;
+								helicopter.raycastPosition.localRotation = Quaternion.Euler( -5f, 0f, 0f );
+							}
+							break;
+						case "DippingSonarPosition":
+							if( isHelicopter ) {
+								helicopter.sonarLine.transform.localRotation = Quaternion.identity;
+								helicopter.sonarLine.transform.localPosition = UIFunctions.globaluifunctions.textparser.PopulateVector3( array2[1].Trim() );
+							}
+							break;
+						case "HoverParticle":
+							if( isHelicopter ) {
+								GameObject gameObject2 = UnityEngine.Object.Instantiate( Resources.Load( array2[1].Trim() ), helicopter.transform.position, helicopter.transform.rotation ) as GameObject;
+								gameObject2.transform.SetParent( helicopter.transform );
+								gameObject2.transform.localPosition = Vector3.zero;
+								gameObject2.transform.localRotation = Quaternion.identity;
+								helicopter.hoverparticle = gameObject2.GetComponent<ParticleSystem>();
+								helicopter.hoverparticle.Stop();
+							}
+							break;
+						case "MeshSpeed":
+							speed = float.Parse( array2[1].Trim() );
+							break;
+						case "MeshAircraftProp":
+							gameObject = Traverse.Create( __instance ).Method( "SetupMesh", new object[] { transform, meshPosition, meshRotation, material, array2[1].Trim() } ).GetValue<GameObject>(); //SetupMesh( transform, meshPosition, meshRotation, material, array2[1].Trim() );
+							Radar radar = gameObject.AddComponent<Radar>();
+							radar.speed = speed;
+							if( isHelicopter ) {
+								gameObject.transform.SetParent( helicopter.helibody );
+							}
+							break;
+						case "AudioClip":
+							if( helicopter != null ) {
+								helicopter.audiosource.clip = UIFunctions.globaluifunctions.textparser.GetAudioClip( array2[1].Trim() );
+							}
+							else {
+								aircraft.audiosource.clip = UIFunctions.globaluifunctions.textparser.GetAudioClip( array2[1].Trim() );
+							}
+							break;
+						case "AudioRollOff":
+							AudioRolloffMode rolloffMode = AudioRolloffMode.Logarithmic;
+							if( array2[1].Trim() != "LOGARITHMIC" ) {
+								rolloffMode = AudioRolloffMode.Linear;
+							}
+							if( helicopter != null ) {
+								helicopter.audiosource.rolloffMode = rolloffMode;
+							}
+							else {
+								aircraft.audiosource.rolloffMode = rolloffMode;
+							}
+							break;
+						case "AudioDistance":
+							string[] array4 = array2[1].Trim().Split( ',' );
+							if( helicopter != null ) {
+								helicopter.audiosource.minDistance = float.Parse( array4[0] );
+								helicopter.audiosource.maxDistance = float.Parse( array4[1] );
+							}
+							else {
+								aircraft.audiosource.minDistance = float.Parse( array4[0] );
+								aircraft.audiosource.maxDistance = float.Parse( array4[1] );
+							}
+							break;
+						case "AudioPitch":
+							if( helicopter != null ) {
+								helicopter.audiosource.pitch = float.Parse( array2[1].Trim() );
+							}
+							else {
+								aircraft.audiosource.pitch = float.Parse( array2[1].Trim() );
+							}
+							break;
+						case "MeshHardpoint":
+							gameObject = Traverse.Create( __instance ).Method( "SetupMesh", new object[] { transform, meshPosition, meshRotation, material, array2[1].Trim() } ).GetValue<GameObject>(); //SetupMesh( transform, meshPosition, meshRotation, material, array2[1].Trim() );
+							list.Add( gameObject );
+							if( isHelicopter ) {
+								helicopter.torpedoHardpoints = list.ToArray();
+								gameObject.transform.SetParent( helicopter.helibody );
+							}
+							break;
+					}
+				}
+			}
+
+		}
+
+			[HarmonyPatch( typeof( Enemy_AntiMissileGuns ), "InitialiseEnemyMissileDefense" )]
 		public class Enemy_AntiMissileGuns_InitialiseEnemyMissileDefense_Patch
 		{
 			[HarmonyPrefix]

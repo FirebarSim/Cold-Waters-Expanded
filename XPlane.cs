@@ -16,26 +16,28 @@ namespace Cold_Waters_Expanded
 
         void Update() {
             if( transform.localEulerAngles.z > 0 && transform.localEulerAngles.z < 90 ) {
-                angleDemand =  - rudderTransform.localEulerAngles.y + sternPlaneTransform.localEulerAngles.x;
-                angleDelta = lastAngle - angleDemand;
-                lastAngle = angleDemand;
-            }
-            else if( transform.localEulerAngles.z > 90 && transform.localEulerAngles.z < 180 ) {
-                angleDemand =  rudderTransform.localEulerAngles.y + sternPlaneTransform.localEulerAngles.x;
-                angleDelta = lastAngle - angleDemand;
-                lastAngle = angleDemand;
-            }
-            else if( transform.localEulerAngles.z > 180 && transform.localEulerAngles.z < 270 ) {
-                angleDemand = rudderTransform.localEulerAngles.y - sternPlaneTransform.localEulerAngles.x;
-                angleDelta = lastAngle - angleDemand;
-                lastAngle = angleDemand;
-            }
-            else if( transform.localEulerAngles.z > 270 && transform.localEulerAngles.z < 360 ) {
                 angleDemand = - rudderTransform.localEulerAngles.y - sternPlaneTransform.localEulerAngles.x;
                 angleDelta = lastAngle - angleDemand;
                 lastAngle = angleDemand;
             }
-            transform.rotation = transform.rotation * Quaternion.Euler( 0, angleDelta, 0 );
+            else if( transform.localEulerAngles.z > 90 && transform.localEulerAngles.z < 180 ) {
+                angleDemand = - rudderTransform.localEulerAngles.y + sternPlaneTransform.localEulerAngles.x;
+                angleDelta = lastAngle - angleDemand;
+                lastAngle = angleDemand;
+            }
+            else if( transform.localEulerAngles.z > 180 && transform.localEulerAngles.z < 270 ) {
+                angleDemand = rudderTransform.localEulerAngles.y + sternPlaneTransform.localEulerAngles.x;
+                angleDelta = lastAngle - angleDemand;
+                lastAngle = angleDemand;
+            }
+            else if( transform.localEulerAngles.z > 270 && transform.localEulerAngles.z < 360 ) {
+                angleDemand = rudderTransform.localEulerAngles.y - sternPlaneTransform.localEulerAngles.x;
+                angleDelta = lastAngle - angleDemand;
+                lastAngle = angleDemand;
+            }
+            //transform.rotation = transform.rotation * Quaternion.Euler( 0, angleDelta, 0 );
+            transform.rotation = transform.rotation * Quaternion.Euler( angleDelta, 0, 0 );
+            //Debug.Log( transform.localRotation.eulerAngles.ToString() );
         }
     }
 }
