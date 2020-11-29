@@ -1,0 +1,9 @@
+[Unit Reference]
+ShipClass=Suffren
+Description=Suffren-class Nuclear Attack Submarine
+History=
+
+[Player Ship Instances]
+PlayerClassNames=Suffren
+
+PlayerClassHullNumbers=

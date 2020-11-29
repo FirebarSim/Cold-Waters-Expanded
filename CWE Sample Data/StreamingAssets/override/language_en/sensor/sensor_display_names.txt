@@ -27,6 +27,14 @@ usn_aqs_13=AQS-13=Active dipping sonar primarily used by the SH-2F ASW helicopte
 
 uk_type_2001=Sonar Type 2001=Sonar 2001 is a conformal Hull Mounted array developed by the UK for their Nuclear Submarines in the 1960s.
 
+uk_type_2016=Sonar Type 2016=The Type 2016 sonar system was the first British sonar to incorporate computerized signal processing to filter out some of the unwanted returns. Type 2016 is installed on Invincible-class aircraft carriers, Type 42 destroyers and Type 22 frigates.
+
+uk_type_2020=Sonar Type 2020=The Type 2020 sonar system was an evolutionary development from the sonar 2001 (and the technology from sonar 2016) with a chinstrap bow conformal array, improved vertical coverage and accuracy and the Ferranti 1600 B computer to provide improved processing and track management.
+
+uk_type_2046=Sonar Type 2046=The Type 2046 sonar system was manufactured for the UK by Ferranti and later Thales Underwater Systems and is a towed array passive search sonar. It is fitted to the V-class SSBNs, and some S and T-class SSNs.
+
+uk_type_2050=Sonar Type 2050=Sonar 2050 is a medium-range bow sonar currently fitted to thirteen Type 23 frigates and is the Royal Navy’s primary hull-mounted anti-submarine warfare sensor. It also provides the ship with passive detection capabilities at lower frequencies.
+
 plan_sjd_3=SJD-3=This is a Chinese high frequency hull-mounted scanning sonar based on an improved Stag Hoof design that equips several frigates.
 
 plan_eh_5=EH-5=Keel-mounted high frequency scanning array that equips the early Jianghu-class frigates.
@@ -119,6 +127,14 @@ usn_sps_67=SPS-67=Typical surface-search radar used by ships to detect other ves
 usn_ln_66=LN-66=Helicopter-mounted surface search set for the SH-2F Seasprite helicopter, optimized for over-the-horizon targeting.
 
 uk_1006=Radar Type 1006=The Type 1006 is X-Band radar used in HM ships and submarines to providing range and bearing information for navigation, pilotage and surface surveillance purposes.
+
+uk_type_965=Radar Type 965=The Type 965 radar is a VHF (P band) long-range aircraft warning radar used by warships of the Royal Navy from the 1960s onwards.
+
+uk_type_966=Radar Type 966=Type 996 is an E/F-Band 3-D surveillance and target identification air/surface search radar used by the U.K. Royal Navy.
+
+uk_type_992=Radar Type 992=Type 992 is a high power, operating in S-Band naval radar providing rapid target indication for weapons. It can also be used as medium range air and surface warning radar.
+
+uk_type_1022=Radar Type 1022=The Type 1022 Radar was an L-Band, long range, surveillance radar used by the Royal Navy. It is described as a STIR, Surveillance, and Target Identification Radar.
 
 plan_klc_1=KLC-1=Helicopter-mounted surface search set for the Z-9C Dauphin, optimized for over-the-horizon targeting.
 

@@ -1,5 +1,27 @@
-newmtl uk_ssn_dreadnought_propbronze
-Ka 1 1 1
-d 1.0
-Pm 0.0
-Ps 0.2
+{
+    "shaderReference":"Standard",
+    "ambientColour":[
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "diffuseColour":[
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "specularExponent":1.0,
+    "specularColour":[
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "opaqueness":1.0,
+    "opticalDensity":1.0,
+    "roughness":0.95,
+    "metallic":0.0,
+    "sheen":0.2
+}

@@ -1,0 +1,8 @@
+[Unit Reference]
+ShipClass=Trafalgar
+Description=Trafalgar-class Nuclear Attack Submarine
+History=The Trafalgar class were designed in the early 1970s during the Cold War as a refinement of the preceding Swiftsure class. Including HMS Dreadnought, the Trafalgar class are the fifth class of nuclear-powered fleet submarines to enter service with the Royal Navy. The first of the class, HMS Trafalgar, was ordered on 7 April 1977 and completed in 1983. The last, HMS Triumph, was ordered on 3 January 1986 and completed in 1991. All seven boats of the class were built and completed by Vickers Shipbuilding and Engineering at the Barrow-in-Furness shipyard.\nAs a refinement of the preceding Swiftsure-class, the design of the Trafalgar-class bears some similarity, including its internal layout and the Rolls-Royce PWR1 Core 3. However some improvements over the Swiftsure class include its reduced acoustic signature, thanks to the hull being covered in anechoic tiles which are designed to absorb sound rather than reflect it, making the boats quieter and more difficult to detect with active sonar. A pumpjet propulsion system is also used from boat 2 onward, rather than a conventional propeller.
+
+[Player Ship Instances]
+PlayerClassNames=HMS Trafalgar, HMS Turbulent, HMS Tireless, HMS Torbay, HMS Trenchant, HMS Talent, HMS Triumph
+PlayerClassHullNumbers=S107, S87, S88, S90, S91, S92, S93

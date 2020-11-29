@@ -1,0 +1,58 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 11.11.2020 11:34:36
+
+newmtl 14___Default
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.8235 0.6980 0.2667
+	Kd 0.8235 0.6980 0.2667
+	Ks 0.4320 0.4320 0.4320
+	Ke 0.0000 0.0000 0.0000
+	map_Ka G:\TS SUPPORT\modele\Suffren_2014\Metall_vieux.jpg
+	map_Kd G:\TS SUPPORT\modele\Suffren_2014\Metall_vieux.jpg
+	map_bump G:\TS SUPPORT\modele\Suffren_2014\Metall_vieux.jpg
+	bump G:\TS SUPPORT\modele\Suffren_2014\Metall_vieux.jpg
+
+newmtl COQUE_SM
+	Ns 30.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0588 0.0588 0.0588
+	Kd 0.0588 0.0588 0.0588
+	Ks 0.3510 0.3510 0.3510
+	Ke 0.0000 0.0000 0.0000
+	map_Ka G:\TS SUPPORT\modele\Suffren_2014\plaque_bump.jpg
+	map_Kd G:\TS SUPPORT\modele\Suffren_2014\plaque_bump.jpg
+	map_bump G:\TS SUPPORT\modele\Suffren_2014\PLACMETA.GIF
+	bump G:\TS SUPPORT\modele\Suffren_2014\PLACMETA.GIF
+
+newmtl Panox
+	Ns 36.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0667 0.0667 0.0667
+	Kd 0.0667 0.0667 0.0667
+	Ks 0.4140 0.4140 0.4140
+	Ke 0.0000 0.0000 0.0000
+
+newmtl 21___Default
+	Ns 10.0000
+	Ni 1.5000
+	d 0.6700
+	Tr 0.3300
+	Tf 0.6700 0.6700 0.6700 
+	illum 2
+	Ka 0.1490 0.3176 0.2627
+	Kd 0.1490 0.3176 0.2627
+	Ks 0.4590 0.4590 0.4590
+	Ke 0.0000 0.0000 0.0000

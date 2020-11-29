@@ -1,0 +1,12 @@
+[Unit Reference]
+ShipClass=Type 42 DDG
+Description=Type 42 AAW Destroyer
+History=The Type 42 or Sheffield class, was a class of fourteen guided missile destroyers that served in the Royal Navy. A further two ships of this class were built for and served with the Argentine Navy.
+
+The first ship of the class was ordered in 1968 and launched in 1971. Two of the class (Sheffield and Coventry) were sunk in action during the Falklands War of 1982. The Royal Navy used this class of destroyer for 38 years between 1975 and 2013.
+
+The Type 42 destroyer was built to fill the gap left by the cancellation of the large Type 82 destroyer. It was intended to fulfil the same role, with similar systems on a smaller and more cost-effective hull. The ships are primarily carriers for the GWS-30 Sea Dart surface-to-air missile system. 
+
+[Player Ship Instances]
+PlayerClassNames=Sheffield,Birmingham,Newcastle,Coventry,Glasgow,Cardiff,Exeter,Southampton,Liverpool,Nottingham,Manchester,York,Gloucester,Edinburgh
+PlayerClassHullNumbers=D80,D86,D87,D118,D88,D108,D89,D90,D92,D91,D95,D98,D97,D97

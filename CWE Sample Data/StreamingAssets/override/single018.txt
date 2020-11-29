@@ -6,7 +6,7 @@ WorldObjectsData=campaign/maps/norwegian_sea_world_objects
 VesselsAndTraffic=campaign/maps/norwegian_sea_traffic
 
 //Environment
-Date=14 NOV 1984
+Date=15 DEC 1984
 Hemisphere=North
 Time=1200
 UsePresetEnvironment=TRUE
@@ -16,9 +16,9 @@ DuctStrength=Moderate
 LayerStrength=Moderate
 
 //Enemy Ships
-NumberOfEnemyUnits=1-1,1-1
-CombatBehaviour=DEFENSIVE,OFFENSIVE
-EnemyShipClasses=wp_ssn_november,wp_ss_foxtrot
+NumberOfEnemyUnits=1-1
+CombatBehaviour=OFFENSIVE
+EnemyShipClasses=wp_ssn_sierra|wp_ssn_alfa|wp_ssn_victor3|wp_ssn_victor2|wp_ssn_victor1|wp_ssn_november
 FormationCruiseSpeed=12
 
 //Enemy Aircraft
@@ -27,6 +27,6 @@ HelicopterType=wp_helix
 NumberOfAircraft=0
 AircraftType=wp_il-38_may
 
-PlayerVessels=uk_ssn_dreadnought
+PlayerVessels=uk_ssn_dreadnought,uk_ssn_trafalgar,fra_ssn_suffren
 CommanderName=Rear-Admiral, Submarines
 CommanderFleetName=Fleet Submarines

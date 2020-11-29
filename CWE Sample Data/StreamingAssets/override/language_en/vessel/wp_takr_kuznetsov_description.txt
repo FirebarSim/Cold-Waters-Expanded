@@ -1,0 +1,7 @@
+[Unit Reference]
+ShipClass=Kuznetsov
+Description=Kuznetsov-Class Tactical Aircraft-Carrying Cruiser
+DefensiveWeapons=SA-N-9 SAM\nCADS-N-1 Kashtan CIWS\nAK-630 CIWS\nUDAV-1 ASW Launcher
+OffensiveWeapons=SS-N-19 Anti-Ship Missiles
+Aircraft=18-24 Ka-27 Helix helicopters\n18-32 Sukhoi Su-33
+History=The Kuznetsov-class aircraft carrier is a class of fixed-wing aircraft carriers operated by the Russian and Chinese navies. Originally designed for the Soviet Navy, the Kuznetsov-class ships use a ski-jump to launch high-performance conventional aircraft in a STOBAR configuration. 

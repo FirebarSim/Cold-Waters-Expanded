@@ -10,8 +10,11 @@ usn_ssn_sturgeon_68
 usn_ssn_permit_68
 usn_ssn_skipjack_68
 uk_ssn_dreadnought
+uk_ssn_trafalgar
+fra_ssn_suffren
 usn_cg_belknap
 usn_ff_knox
+uk_ddg_type42
 wp_ssbn_typhoon
 wp_ssbn_delta4
 wp_ssbn_delta3
@@ -35,6 +38,7 @@ wp_ss_tango
 wp_ss_foxtrot
 wp_ss_romeo
 wp_ss_whiskey
+wp_takr_kuznetsov
 wp_takr_kiev
 wp_rkr_kirov
 wp_kr_sverdlov

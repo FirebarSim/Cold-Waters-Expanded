@@ -1,6 +1,6 @@
 Image=campaign/images/HMS Dreadnought.png
-MissionLocation=Near Taiwan
-Briefing=Test of HMS Dreadnought.
+MissionLocation=North Sea
+Briefing=Test of New Submarines.
 Briefing=
 Briefing=
 Briefing=

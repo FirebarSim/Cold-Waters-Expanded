@@ -1,0 +1,26 @@
+{
+   "shaderReference":"Marmoset/Bumped Specular IBL",
+   "ambientColour":[
+      0.8196079,
+      0.7215686,
+      0.1058824,
+      1.0
+   ],
+   "diffuseColour":[
+      0.8196079,
+      0.7215686,
+      0.1058824,
+      1.0
+   ],
+   "specularExponent":1,
+   "specularColour":[
+      0,
+      0,
+      0
+   ],
+   "opaqueness":1.0,
+   "opticalDensity":1.0,
+   "roughness":0.5,
+   "metallic":1.0,
+   "sheen":0.5
+}
