@@ -25,3 +25,10 @@ Method = .cctor
 * Extract the CWE .zip folder to `Cold Waters\BepInEx\plugins`
 * Verify filestructure `Cold Waters\BepInEx\plugins\Cold Waters Expanded\` contains the Mod files.
 * Run Cold Waters - refer to the Output Log for errors.
+
+## Sample Data
+The sample data folder contains several sets of data:
+* Sample .blend files for use in Blender
+* Sample .xcf file for use in Gimp 2
+* The asset bundle exporter that I use (to use this Unity v5 is required and the export path must be changed to your Cold Waters install location)
+* My Cold Waters override folder, this should contain everything needed to import new files, but care should be taken in its use
