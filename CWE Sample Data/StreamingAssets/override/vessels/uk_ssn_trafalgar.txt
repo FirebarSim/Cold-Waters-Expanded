@@ -4,7 +4,7 @@ PlayerHUD=hud/default
 
 Length=85.4
 Beam=9.9
-HullHeight=0.0
+HullHeight=0.1
 Displacement=5300
 Crew=130
 Range=10000
@@ -96,11 +96,10 @@ ModelFile=bundles/royal_navy_subs.unity3d
 //Hull and Deck
 MeshPosition=0,0,0
 MeshRotation=0,0,0
-MeshHullCollider=uk_ssn_trafalgar_collider_hull
-MeshSuperstructureCollider=uk_ssn_trafalgar_collider_sail
+MeshHullCollider=uk_ssn_trafalgar_coll_hull
+MeshSuperstructureCollider=uk_ssn_trafalgar_coll_ss
 Material=bundles/royal_navy_subs.unity3d,assets/materials/uk_ssn_trafalgar_hull.mat
-//MaterialTextures=ships/uk_ssn_dreadnought/uk_ssn_dreadnought_tx.png,ships/uk_ssn_dreadnought/uk_ssn_dreadnought_sp.png,ships/uk_ssn_dreadnought/uk_ssn_dreadnought_nm.png
-Mesh=uk_ssn_trafalgar_hull
+Mesh=uk_ssn_trafalgar
 Mesh=uk_ssn_trafalgar_shroud
 MeshPosition=0,0.02725669,0.2915303
 Mesh=uk_ssn_trafalgar_51r
