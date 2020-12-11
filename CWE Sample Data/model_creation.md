@@ -74,3 +74,10 @@ This leaves me with the below.
 
 ![](/CWE%20Sample%20Data/images/Screenshot%202020-12-11%20000535.png)
 
+Next I switch to the UV Mapping Tab at the top of the Window. This presents me with two views, the left is the texture map and the right the model.
+
+With the mouse in the model pane I press `a` to select all, then I move the mouse to the UV Pane and press `u` this performs a quick UV unwrap and fits everything it. I wont do anything more for this model.
+
+My screen now looks something like this.
+
+![](/CWE%20Sample%20Data/images/Screenshot%202020-12-11%20001424.png)
