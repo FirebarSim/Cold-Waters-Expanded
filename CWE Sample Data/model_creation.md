@@ -58,3 +58,19 @@ Next I right click and select `Shade Smooth` and then in the Mesh Panel on the r
 
 ## Step 3 - Simple UV Mapping
 
+The next step is getting prepared to put a texture on the model, via a technique called UV Mapping. This translates coordinates in 3d space to 2d Space to map a flat texture to a 3d model.
+
+We start by marking in a seam around the nose cap of the capsule, we change our selection mode to *edges* and select all the edges where we extruded the first time. Then we right click and select `Mark Seam`.
+
+![](/CWE%20Sample%20Data/images/Screenshot%202020-12-10%20230401.png)
+
+I do the same along the top and bottom most long edges of the capsule and the two rings of verticies at the back. 
+
+At the same time I decide to add another ring of verticies in the middle to make mapping easier. I do this by selecting all the edges in the long section of the capsule, then right click and select `subdivide`. I make this new ring of edges a seam too.
+
+I then decide to smooth the transition between the dome and the tube of the capsule. I select the edge ring, then press `Ctrl+E` and select `Bevel Edges` I play with the number of edges and the amout until it looks nice. Then I remove the extra seam that crept in.
+
+This leaves me with the below.
+
+![](/CWE%20Sample%20Data/images/Screenshot%202020-12-11%20000535.png)
+
