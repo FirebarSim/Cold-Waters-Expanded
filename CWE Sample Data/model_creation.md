@@ -128,7 +128,7 @@ Now select all the object that you want to export, for me this is just the capsu
 
 Then select `File > Export > FBX`
 
-![](/CWE%20Sample%20Data/images/Screenshot%202020-12-12%20163546.png)
+![](/CWE%20Sample%20Data/images/Screenshot%202020-12-12%20163546(1).png)
 
 The Export settings window pops up, you will need to reenter these settings each time you reopen Blender.
 
