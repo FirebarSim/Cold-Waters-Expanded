@@ -1,0 +1,3 @@
+language_en=uk_1006=Radar Type 1006=The Type 1006 is X-Band radar used in HM ships and submarines to providing range and bearing information for navigation, pilotage and surface surveillance purposes.
+RADARModel=uk_1006
+RADARRange=60000

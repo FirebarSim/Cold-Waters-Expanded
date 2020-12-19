@@ -1,3 +1,5 @@
+language_en=Submarine Test
+
 UseTerrain=TRUE
 MapCoordinates=1470,946
 MapNavigationData=campaign/images/maps/norwegian_sea_navmap

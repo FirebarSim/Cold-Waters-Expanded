@@ -1,0 +1,9 @@
+language_en=uk_type_2016=Sonar Type 2016=The Type 2016 sonar system was the first British sonar to incorporate computerized signal processing to filter out some of the unwanted returns. Type 2016 is installed on Invincible-class aircraft carriers, Type 42 destroyers and Type 22 frigates.
+SonarModel=uk_type_2016
+SonarType=ACTIVE/PASSIVE
+SonarFrequencies=M
+SonarActiveSensitivity=22
+SonarPassiveSensitivity=22
+SonarBaffle=150
+SonarNoisePerKnot=1
+SonarOutput=210

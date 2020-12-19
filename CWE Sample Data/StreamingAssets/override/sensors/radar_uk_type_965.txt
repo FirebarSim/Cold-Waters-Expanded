@@ -1,0 +1,3 @@
+language_en=uk_type_965=Radar Type 965=The Type 965 radar is a VHF (P band) long-range aircraft warning radar used by warships of the Royal Navy from the 1960s onwards.
+RADARModel=uk_type_965
+RADARRange=40500

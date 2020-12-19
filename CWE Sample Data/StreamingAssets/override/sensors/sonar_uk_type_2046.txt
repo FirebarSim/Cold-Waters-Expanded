@@ -1,0 +1,9 @@
+language_en=uk_type_2046=Sonar Type 2046=The Type 2046 sonar system was manufactured for the UK by Ferranti and later Thales Underwater Systems and is a towed array passive search sonar. It is fitted to the V-class SSBNs, and some S and T-class SSNs.
+SonarModel=uk_type_2046
+SonarType=TOWED
+SonarFrequencies=L
+SonarActiveSensitivity=0
+SonarPassiveSensitivity=50
+SonarBaffle=FALSE
+SonarNoisePerKnot=3
+SonarOutput=0

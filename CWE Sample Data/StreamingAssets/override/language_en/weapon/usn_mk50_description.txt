@@ -1,0 +1,4 @@
+[Weapon Reference]
+WeaponName=Mk. 50
+WeaponDescriptiveName=Mark 50 Lightweight Torpedo
+WeaponDescription=

@@ -1,0 +1,3 @@
+language_en=uk_type_992=Radar Type 992=Type 992 is a high power, operating in S-Band naval radar providing rapid target indication for weapons. It can also be used as medium range air and surface warning radar.
+RADARModel=uk_type_992
+RADARRange=40500

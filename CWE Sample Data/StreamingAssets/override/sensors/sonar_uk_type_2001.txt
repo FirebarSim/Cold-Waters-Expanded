@@ -1,0 +1,9 @@
+language_en=uk_type_2001=Sonar Type 2001=Sonar 2001 is a conformal Hull Mounted array developed by the UK for their Nuclear Submarines in the 1960s.
+SonarModel=uk_type_2001
+SonarType=ACTIVE/PASSIVE
+SonarFrequencies=L,L
+SonarActiveSensitivity=30
+SonarPassiveSensitivity=37
+SonarBaffle=150
+SonarNoisePerKnot=1
+SonarOutput=220

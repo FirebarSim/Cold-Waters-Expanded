@@ -84,14 +84,14 @@ MeshRotation=0,0,0
 MeshHullCollider=hull
 MeshSuperstructureCollider=superstructure
 
-Material=ships/wp_takr_kiev/wp_takr_kiev_mat
+Material=BLANK
 MaterialTextures=ships/wp_takr_kuznetsov/wp_takr_kuznetsov_tx.png,ships/wp_takr_kuznetsov/wp_takr_kuznetsov_spec.png,ships/wp_takr_kuznetsov/wp_takr_kuznetsov_nm.png
 Mesh=hull
 Mesh=superstructure
 
 
 ModelFile=ships/wp_takr_kiev/wp_takr_kiev
-Material=FALSE
+Material=ships/wp_takr_kiev/wp_takr_kiev_mat
 MaterialTextures=ships/wp_takr_kiev/wp_takr_kiev_tx,ships/wp_takr_kiev/wp_takr_kiev_spec,ships/wp_takr_kiev/wp_takr_kiev_nm
 
 MeshPosition=-0.1154,0,-2

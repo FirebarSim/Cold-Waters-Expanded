@@ -91,14 +91,15 @@ FLOODING5=-129,59,-78,-34
 DamageControlPartyY=-28
 
 [Model]
-ModelFile=bundles/royal_navy_subs.unity3d
+AssetBundle=bundles/royal_navy_subs.unity3d
+ModelFile=assets/models/uk_ssn_trafalgar.fbx
 
 //Hull and Deck
 MeshPosition=0,0,0
 MeshRotation=0,0,0
 MeshHullCollider=uk_ssn_trafalgar_coll_hull
 MeshSuperstructureCollider=uk_ssn_trafalgar_coll_ss
-Material=bundles/royal_navy_subs.unity3d,assets/materials/uk_ssn_trafalgar_hull.mat
+Material=assets/materials/uk_ssn_trafalgar.mat
 Mesh=uk_ssn_trafalgar
 Mesh=uk_ssn_trafalgar_shroud
 MeshPosition=0,0.02725669,0.2915303
@@ -166,9 +167,6 @@ MeshPosition=0,0,0
 ChildMesh=uk_ssn_trafalgar_mast_radar_head
 //MeshTranslate=VesselMovement,percentageSurfaced,vesselmovement,LessThan,1000,Translate,3,0,-0.06039807384533475309463596432848,0
 
-
-Material=bundles/royal_navy_subs.unity3d,assets/materials/uk_ssn_trafalgar_prop.mat
-MaterialTextures=
 MeshPosition=0,-0.05681937,-0.589518
 MeshProp=uk_ssn_trafalgar_rotor
 

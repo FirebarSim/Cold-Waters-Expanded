@@ -1,0 +1,3 @@
+language_en=uk_type_966=Radar Type 966=Type 996 is an E/F-Band 3-D surveillance and target identification air/surface search radar used by the U.K. Royal Navy.
+RADARModel=uk_type_966
+RADARRange=40500

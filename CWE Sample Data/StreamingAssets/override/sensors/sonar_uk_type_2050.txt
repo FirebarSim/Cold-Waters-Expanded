@@ -1,0 +1,9 @@
+language_en=uk_type_2050=Sonar Type 2050=Sonar 2050 is a medium-range bow sonar currently fitted to thirteen Type 23 frigates and is the Royal Navy’s primary hull-mounted anti-submarine warfare sensor. It also provides the ship with passive detection capabilities at lower frequencies.
+SonarModel=uk_type_2050
+SonarType=ACTIVE/PASSIVE
+SonarFrequencies=M
+SonarActiveSensitivity=30
+SonarPassiveSensitivity=30
+SonarBaffle=150
+SonarNoisePerKnot=1
+SonarOutput=210

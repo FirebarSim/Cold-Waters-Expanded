@@ -1,0 +1,9 @@
+language_en=uk_type_2020=Sonar Type 2020=The Type 2020 sonar system was an evolutionary development from the sonar 2001 (and the technology from sonar 2016) with a chinstrap bow conformal array, improved vertical coverage and accuracy and the Ferranti 1600 B computer to provide improved processing and track management.
+SonarModel=uk_type_2020
+SonarType=ACTIVE/PASSIVE
+SonarFrequencies=L,L
+SonarActiveSensitivity=28
+SonarPassiveSensitivity=40
+SonarBaffle=150
+SonarNoisePerKnot=1
+SonarOutput=235

@@ -1,0 +1,3 @@
+language_en=uk_type_1022=Radar Type 1022=The Type 1022 Radar was an L-Band, long range, surveillance radar used by the Royal Navy. It is described as a STIR, Surveillance, and Target Identification Radar.
+RADARModel=uk_type_1022
+RADARRange=40500

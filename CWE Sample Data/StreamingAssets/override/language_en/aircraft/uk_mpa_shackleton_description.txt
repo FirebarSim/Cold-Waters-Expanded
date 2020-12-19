@@ -1,0 +1,4 @@
+[Unit Reference]
+AircraftName=Shackleton MR.2
+AircraftDescriptiveName=Avro Shackleton MR.2
+History=The Avro Shackleton is a British long-range maritime patrol aircraft (MPA) which was used by the Royal Air Force (RAF) and the South African Air Force (SAAF). It was developed by Avro from the Avro Lincoln bomber, which itself had been a development of the famous wartime Avro Lancaster bomber.

@@ -1,0 +1,8 @@
+language_en=uk_45_mk8_shell=4.5-inch Mark 8 Naval Gun Mod 0/1=Mk 8 Mod 0/1
+DepthWeaponObjectReference=uk_45_mk8_shell
+DepthWeaponWarhead=21
+DepthWeaponRange=100,25900
+DepthWeaponNumberFired=1
+DepthWeaponRateOfFire=1
+DepthWeaponReloadTime=2.4
+DepthWeaponVelocity=5.2

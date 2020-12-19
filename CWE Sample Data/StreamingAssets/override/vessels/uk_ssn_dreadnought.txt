@@ -108,7 +108,7 @@ MeshBowPlanes=uk_ssn_dreadnought_bowplanes
 MeshPosition=0,-0.05765672301344336483428723545853,-0.49861929988020764009050978304261
 MeshSternPlanes=uk_ssn_dreadnought_sternplanes
 
-Material=bundles/royal_navy_subs.unity3d,assets/materials/uk_ssn_trafalgar_prop.mat
+Material=ships/uk_ssn_dreadnought/uk_ssn_dreadnought_propbronze.mtl
 MaterialTextures=
 MeshPosition=0,-0.05765672301344336483428723545853,-0.55895434580061227206175961666432
 MeshProp=uk_ssn_dreadnought_prop

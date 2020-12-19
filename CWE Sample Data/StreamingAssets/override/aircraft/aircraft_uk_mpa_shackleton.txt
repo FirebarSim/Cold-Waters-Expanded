@@ -1,0 +1,32 @@
+AircraftObjectReference=uk_mpa_shackleton
+AircraftType=FIXED WING
+CruiseSpeed=300
+Length=26.62
+Height=5.33
+Weight=39000
+Crew=10
+RADAR=plan_aps_504
+RADARSignature=LARGE
+ActiveSonarModel=FALSE
+PassiveSonarModel=FALSE
+SonobuoyTypes=wp_bm_1,wp_bm_2,wp_bm_3
+SonobuoyNumbers=144,10,3
+[Weapon Systems]
+TorpedoTypes=plan_yu-7
+TorpedoNumbers=2
+DepthBomb=wp_depth_bomb_50
+DepthBombNumbers=12
+MinCameraDistance=1
+
+[Model]
+ModelFile=aircraft/uk_mpa_shackleton/uk_mpa_shackleton.gltf
+MeshPosition=0,0,0
+MeshRotation=0,0,0
+Material=BLANK
+MeshAircraftBody=Main
+
+AudioClip=audio/units/turboprop
+AudioRollOff=LINEAR
+AudioDistance=2,25
+AudioPitch=1
+[/Model]
