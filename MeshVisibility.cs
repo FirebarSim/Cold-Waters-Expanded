@@ -14,7 +14,7 @@ namespace Cold_Waters_Expanded
         Assembly assembly;
         FieldInfo fieldInfo;
         object instance;
-        enum Evaluation { Equals,NotEquals,GreaterThan,LessThan }
+        enum Evaluation { TextEquals,Equals,TextNotEquals,NotEquals,GreaterThan,LessThan }
         Evaluation evaluation;
 
         void Awake() {
@@ -39,8 +39,12 @@ namespace Cold_Waters_Expanded
 
         bool EvaluateCondition() {
             switch( evaluation ) {
+                case Evaluation.TextEquals:
+                    return (string) fieldInfo.GetValue( instance ) == conditionString.Split( ',' )[4].Trim();
                 case Evaluation.Equals:
                     return (float) fieldInfo.GetValue( instance ) == float.Parse( conditionString.Split( ',' )[4].Trim() );
+                case Evaluation.TextNotEquals:
+                    return !( (string) fieldInfo.GetValue( instance ) == conditionString.Split( ',' )[4].Trim() );
                 case Evaluation.NotEquals:
                     return !( (float) fieldInfo.GetValue( instance ) == float.Parse( conditionString.Split( ',' )[4].Trim() ) );
                 case Evaluation.GreaterThan:

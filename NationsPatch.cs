@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Cold_Waters_Expanded
 {
-    [BepInPlugin( "org.cwe.plugins.nation", "Cold Waters Expanded Nation Patches", "1.0.0.0" )]
+    [BepInPlugin( "org.cwe.plugins.nation", "Cold Waters Expanded Nation Patches", "1.0.1.0" )]
     class NationsPatch : BaseUnityPlugin
     {
         static NationsPatch nationsPatch;
@@ -20,10 +20,12 @@ namespace Cold_Waters_Expanded
         }
 
         public void LoadNewFlags() {
-            foreach( string path in Directory.GetFiles( Application.streamingAssetsPath + "/override/hud/flags/", "flag_*.png" ) ) {
-                //Debug.Log( Path.GetFileNameWithoutExtension(path).Replace("flag_","" ));
-                nations.Add( Path.GetFileNameWithoutExtension( path ).Replace( "flag_", "" ) );
-                nationSprites.Add( CreateSprite(path) );
+            if( Directory.Exists( Application.streamingAssetsPath + "/override/hud/flags/" ) ) {
+                foreach( string path in Directory.GetFiles( Application.streamingAssetsPath + "/override/hud/flags/", "flag_*.png" ) ) {
+                    nations.Add( Path.GetFileNameWithoutExtension( path ).Replace( "flag_", "" ) );
+                    nationSprites.Add( CreateSprite( path ) );
+                    Debug.Log( "\tFlag added from: \\override\\hud\\\flags\\" + Path.GetFileName( path ) );
+                }
             }
         }
 
@@ -47,7 +49,7 @@ namespace Cold_Waters_Expanded
                     nationsPatch.LoadNewFlags();
                     Traverse.Create( UIFunctions.globaluifunctions.levelloadmanager ).Field( "nations" ).SetValue( nationsPatch.nations.ToArray() );
                     Traverse.Create( UIFunctions.globaluifunctions.levelloadmanager ).Field( "nationSprites" ).SetValue( nationsPatch.nationSprites.ToArray() );
-                    Debug.Log( "Nations Patched" );
+                    Debug.Log( "\tNations Patched" );
                 }
             }
         }

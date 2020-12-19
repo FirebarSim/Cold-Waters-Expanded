@@ -23,6 +23,7 @@ namespace Cold_Waters_Expanded
 
         public Material GetMaterial() {
             Material material = new Material( Resources.Load( "ships/usn_ssn_skipjack/usn_ssn_skipjack_mat" ) as Material );
+            //Debug.Log( material.ToString() );
             Color diffuse;
             if( diffuseColour.Count == 3 ) {
                 diffuse = new Color( diffuseColour[0], diffuseColour[1], diffuseColour[2], 1.0f );
@@ -45,7 +46,14 @@ namespace Cold_Waters_Expanded
             material.SetTexture( "_MainTex", null );
             material.SetTexture( "_SpecTex", null );
             material.SetTexture( "_BumpMap", null );
+            //Debug.Log( material.ToString() );
             return material;
         }
+
+        public static Material LoadMaterial( string materialPath ) {
+            string json = File.ReadAllText( materialPath );
+            return JsonUtility.FromJson<SerialiseMaterial>( json ).GetMaterial();
+        }
+
     }
 }
