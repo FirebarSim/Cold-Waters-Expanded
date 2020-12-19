@@ -3,7 +3,7 @@
 Cold Waters Expanded is my attempt to provide a wider range of modding functionality for Cold Waters. It also aims to increase the modularity of the game to reduce the conflict points that mods can cause. The mod provides, as of version 1.0.1.0:
 * Ability to load gLTF model files at run time, providing easy modding of new models
 * Ability to load Unity AssetBundles, providing the full power of the Unity materials system etc, some particles are supported at the moment and more will be as I continue work.
-* X Plane functionality, to support vessels such as the Surcouff
+* X Plane functionality, to support vessels such as the Suffren
 * Mesh visibility functionality, to show and hide mesh based on some conditions
 * Mesh translate function, to translate mesh when a condition is met or not
 * Nation Flags, extra flags in the Unit Reference viewer
