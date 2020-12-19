@@ -46,7 +46,7 @@ namespace Cold_Waters_Expanded
 		
 	}
 
-	[BepInPlugin( "org.cwe.plugins.import", "Cold Waters Expanded Import Patches", "1.0.1.0" )]
+	[BepInPlugin( "org.cwe.plugins.import", "Cold Waters Expanded Import Patches", "1.0.1.1" )]
 	public class ImporterPatch : BaseUnityPlugin {
 
 		static ImporterPatch patcher;
@@ -2171,7 +2171,10 @@ namespace Cold_Waters_Expanded
 								Dictionary<string, Dictionary<string, List<string>>> vesselDict = new Dictionary<string, Dictionary<string, List<string>>>();
                                 
 								foreach( string vesselFileName in Directory.GetFiles( Application.streamingAssetsPath + "/override/vessels", "*.txt" ) ) {
-									if( Path.GetFileNameWithoutExtension( vesselFileName ) != "_vessel_list" && !returnList.Contains( Path.GetFileNameWithoutExtension( vesselFileName ) ) ) {
+                                    if( Path.GetFileNameWithoutExtension( vesselFileName ).Contains("player") ) {
+										Debug.LogError( "\tRejected Player Vessel: " + Path.GetFileNameWithoutExtension( vesselFileName ) );
+                                    }
+									else if( Path.GetFileNameWithoutExtension( vesselFileName ) != "_vessel_list" && !returnList.Contains( Path.GetFileNameWithoutExtension( vesselFileName ) ) ) {
 										returnList.Add( Path.GetFileNameWithoutExtension( vesselFileName ) );
 										Debug.Log( '\t' + Path.GetFileNameWithoutExtension( vesselFileName ) + " added to _vessel_list" );
 										__result = returnList.ToArray();
