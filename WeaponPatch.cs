@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Cold_Waters_Expanded
 {
-	[BepInPlugin( "org.cwe.plugins.weapon", "Cold Waters Expanded Weapon Patches", "1.0.1.0" )]
+	[BepInPlugin( "org.cwe.plugins.weapon", "Cold Waters Expanded Weapon Patches", "1.0.1.2" )]
 	class WeaponPatch : BaseUnityPlugin
 	{
 		public static WeaponPatch weaponPatch;
@@ -62,29 +62,5 @@ namespace Cold_Waters_Expanded
 				}
 			}
 		}
-
-  //      [HarmonyPatch( typeof( Torpedo ), "Start" )]
-  //      public class Torpedo_Start_Patch
-  //      {
-  //          public static void Postfix( Torpedo __instance ) {
-  //              Debug.Log( "Torpedo.cs - StartPostfix()" );
-  //              Debug.Log( "\tisBallistic: " + weaponPatch.weaponDataExtensions[__instance.databaseweapondata].isBallistic );
-  //              if( weaponPatch.weaponDataExtensions[__instance.databaseweapondata].isBallistic ) {
-		//			weaponPatch.weaponTrajectories.Add( __instance, new BallisticTrajectory( weaponPatch.weaponDataExtensions[__instance.databaseweapondata].ballisticCeiling, Vector3.Distance( __instance.gameObject.transform.position, __instance.initialWaypointPosition ) ) );
-  //              }
-  //          }
-  //      }
-
-  //      [HarmonyPatch( typeof( Torpedo ), "FixedUpdate" )]
-		//public class Torpedo_FixedUpdate_Patch
-		//{
-		//	[HarmonyPrefix]
-		//	public static void Postfix( Torpedo __instance ) {
-		//		Debug.Log( "Torpedo.cs - FixedUpdatePrefix()" );
-		//		if( weaponPatch.weaponDataExtensions[__instance.databaseweapondata].isBallistic ) {
-		//			__instance.cruiseYValue = 1000f + weaponPatch.weaponTrajectories[__instance].GetAltitude( Vector3.Distance( __instance.gameObject.transform.position, __instance.initialWaypointPosition ) );
-		//		}
-		//	}
-		//}
 	}
 }

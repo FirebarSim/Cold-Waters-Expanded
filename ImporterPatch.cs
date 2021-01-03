@@ -46,7 +46,7 @@ namespace Cold_Waters_Expanded
 		
 	}
 
-	[BepInPlugin( "org.cwe.plugins.import", "Cold Waters Expanded Import Patches", "1.0.1.1" )]
+	[BepInPlugin( "org.cwe.plugins.import", "Cold Waters Expanded Import Patches", "1.0.1.2" )]
 	public class ImporterPatch : BaseUnityPlugin {
 
 		static ImporterPatch patcher;
@@ -133,7 +133,7 @@ namespace Cold_Waters_Expanded
             if( assetBundle != null && assetBundle.Contains( modelPath ) ) {
 				Transform transform = assetBundle.LoadAsset<GameObject>( modelPath ).transform.FindDeepChild( meshName );
 				if( transform != null ) {
-					GameObject template = transform.gameObject;
+					GameObject template = Instantiate( transform.gameObject );
 					if( meshMaterial == null ) {
 						gameObject.GetComponent<MeshRenderer>().sharedMaterials = template.GetComponent<MeshRenderer>().sharedMaterials;
 					}
@@ -285,8 +285,8 @@ namespace Cold_Waters_Expanded
 				int num9 = 0;
 				int num10 = 0;
 				int num11 = 0;
-				int num12 = 0;
-				int num13 = 0;
+				int countASWMortar = 0;
+				int countTurrets = 0;
 				Vector3 localPosition = Vector3.zero;
 				Vector3 localRotation = Vector3.zero;
 				Vector3 localScale = Vector3.one;
@@ -305,6 +305,7 @@ namespace Cold_Waters_Expanded
 				bool flag = false;
 				string filename = Path.Combine( "vessels", vesselPrefabRef );
 				string[] array = UIFunctions.globaluifunctions.textparser.OpenTextDataFile( filename );
+				//string hullNumberFormat = "";
 				for( int i = 0; i < array.Length; i++ ) {
 					//Debug.Log( 259 );
 					string[] array2 = array[i].Split( '=' );
@@ -316,15 +317,26 @@ namespace Cold_Waters_Expanded
 					}
 					switch( array2[0] ) {
 						case "AssetBundle":
+                            if( File.Exists(Application.streamingAssetsPath + "/override" + array2[1].Trim() ) ) {
+
+                            }
 							if( assetBundlePath != null ) {
 								assetBundle.Unload( false );
 							}
 							assetBundlePath = array2[1].Trim();
 							assetBundle = AssetBundle.LoadFromFile( Application.streamingAssetsPath + "/override/" + assetBundlePath );
+							Debug.Log( "\tLoaded AssetBundle from: " + assetBundlePath );
+                            foreach( var asset in assetBundle.GetAllAssetNames() ) {
+								Debug.Log( "\t\t" + asset );
+                            }
+							break;
+						case "DebugLog":
+							Debug.Log("\tLog Statement in File " + vesselPrefabRef + ": " + array2[1].Trim() );
 							break;
 						case "ModelFile": {
 								if( assetBundlePath != null ) {
 									modelPath = array2[1].Trim();
+									//__instance.allMeshes = assetBundle.LoadAllAssets<Mesh>();
 								}
                                 else if( array2[1].Trim().Contains(".gltf" ) ) {
 									Debug.Log( "\tGetModel (GLTF): " + array2[1] );
@@ -461,7 +473,12 @@ namespace Cold_Waters_Expanded
 								list2.Add( meshCollider );
 								break;
 							}
-						case "MeshHullNumber": {
+                        //case "HullNumberFormat":
+                        //    if( array2[1].Trim().Length > 0 ) {
+                        //        hullNumberFormat = array2[1].Trim();
+                        //    }
+                        //    break;
+                        case "MeshHullNumber": {
 								if( !array2[1].Trim().Contains( "," ) ) {
 									gameObject = SetupMesh( __instance, meshHolder, localPosition, localRotation, material, array2[1].Trim(), modelPath, assetBundle );
 								}
@@ -478,7 +495,15 @@ namespace Cold_Waters_Expanded
 								}
 								activeVessel.vesselmovement.hullNumberRenderer = gameObject.GetComponent<MeshRenderer>();
 								int num14 = UnityEngine.Random.Range( 0, activeVessel.databaseshipdata.hullnumbers.Length );
-								string texturePath = "ships/materials/hullnumbers/" + activeVessel.databaseshipdata.hullnumbers[num14];
+								string texturePath;
+                                if( File.Exists(Application.streamingAssetsPath + "/override/ships/materials/hullnumbers/" + activeVessel.databaseshipdata.hullnumbers[num14] + ".png" ) ) {
+									//Debug.Log( "FOund PNG: " + Application.streamingAssetsPath + "/override/ships/materials/hullnumbers/" + activeVessel.databaseshipdata.hullnumbers[num14] + ".png" );
+									texturePath = "ships/materials/hullnumbers/" + activeVessel.databaseshipdata.hullnumbers[num14] + ".png";
+								}
+                                else {
+									//Debug.Log( "Not FOund PNG: " + Application.streamingAssetsPath + "/override/ships/materials/hullnumbers/" + activeVessel.databaseshipdata.hullnumbers[num14] + ".png" );
+									texturePath = "ships/materials/hullnumbers/" + activeVessel.databaseshipdata.hullnumbers[num14];
+								}
 								Material material2 = activeVessel.vesselmovement.hullNumberRenderer.material;
 								material2.SetTexture( "_MainTex", UIFunctions.globaluifunctions.textparser.GetTexture( texturePath ) );
 								break;
@@ -498,7 +523,13 @@ namespace Cold_Waters_Expanded
 									list4.Add( GetMesh( __instance, array29[1].Trim(), modelPath, assetBundle, ref bin ) );
 								}
 							}
-							list.Add( gameObject.transform );
+                            if( gameObject != null ) {
+								list.Add( gameObject.transform );
+							}
+                            else {
+								list.Add( new GameObject().transform );
+								Debug.LogError( "\tUnable to assign null GameObject to Rudder Transform" );
+                            }
 							break;
 						case "MeshProp":
 							if( !array2[1].Trim().Contains( "," ) ) {
@@ -515,8 +546,15 @@ namespace Cold_Waters_Expanded
 									list4.Add( GetMesh( __instance, array11[1].Trim(), modelPath, assetBundle, ref bin ) );
 								}
 							}
-							activeVessel.vesselmovement.props[num5] = gameObject.transform;
-							num5++;
+                            if( gameObject != null ) {
+								activeVessel.vesselmovement.props[num5] = gameObject.transform;
+								num5++;
+							}
+                            else {
+								activeVessel.vesselmovement.props[num5] = new GameObject().transform;
+								num5++;
+								Debug.LogError( "\tUnable to assign null GameObject to Prop Transform" );
+							}
 							break;
 						case "MeshBowPlanes":
 							if( !array2[1].Trim().Contains( "," ) ) {
@@ -533,7 +571,13 @@ namespace Cold_Waters_Expanded
 									list4.Add( GetMesh( __instance, array23[1].Trim(), modelPath, assetBundle, ref bin ) );
 								}
 							}
-							activeVessel.vesselmovement.planes[0] = gameObject.transform;
+                            if( gameObject != null ) {
+								activeVessel.vesselmovement.planes[0] = gameObject.transform;
+							}
+                            else {
+								activeVessel.vesselmovement.planes[0] = new GameObject().transform;
+								Debug.LogError( "\tUnable to assign null GameObject to Bow Planes Transform" );
+							}
 							break;
 						case "MeshSternPlanes":
 							if( !array2[1].Trim().Contains( "," ) ) {
@@ -550,7 +594,13 @@ namespace Cold_Waters_Expanded
 									list4.Add( GetMesh( __instance, array21[1].Trim(), modelPath, assetBundle, ref bin ) );
 								}
 							}
-							activeVessel.vesselmovement.planes[1] = gameObject.transform;
+                            if( gameObject != null ) {
+								activeVessel.vesselmovement.planes[1] = gameObject.transform;
+							}
+                            else {
+								activeVessel.vesselmovement.planes[1] = gameObject.transform;
+								Debug.LogError( "\tUnable to assign null GameObject to Stern Planes Transform" );
+							}
 							break;
 						case "MastHeight":
 							if( playerControlled ) {
@@ -638,9 +688,14 @@ namespace Cold_Waters_Expanded
 									list4.Add( GetMesh( __instance, array7[1].Trim(), modelPath, assetBundle, ref bin ) );
 								}
 							}
-							material[0].color = Environment.whiteLevel;
-							gameObject.layer = 17;
-							activeVessel.vesselmovement.flagRenderer = gameObject.GetComponent<MeshRenderer>();
+                            if( gameObject != null ) {
+								gameObject.GetComponent<MeshRenderer>().sharedMaterials[0].color = Environment.whiteLevel;
+								gameObject.layer = 17;
+								activeVessel.vesselmovement.flagRenderer = gameObject.GetComponent<MeshRenderer>();
+							}
+                            else {
+								Debug.LogError( "\tUnable to set null GameObject as Flag" );
+                            }
 							break;
 						case "MeshOtherFlags":
 							if( !array2[1].Trim().Contains( "," ) ) {
@@ -657,8 +712,13 @@ namespace Cold_Waters_Expanded
 									list4.Add( GetMesh( __instance, array4[1].Trim(), modelPath, assetBundle, ref bin ) );
 								}
 							}
-							material[0].color = Environment.whiteLevel;
-							gameObject.layer = 17;
+                            if( gameObject != null ) {
+								material[0].color = Environment.whiteLevel;
+								gameObject.layer = 17;
+							}
+                            else {
+								Debug.LogError( "\tUnable to set null GameObject as Flag" );
+							}
 							break;
 						case "RADARSpeed":
 							speed = float.Parse( array2[1].Trim() );
@@ -681,9 +741,14 @@ namespace Cold_Waters_Expanded
 										list4.Add( GetMesh( __instance, array20[1].Trim(), modelPath, assetBundle, ref bin ) );
 									}
 								}
-								Radar radar = gameObject.AddComponent<Radar>();
-								radar.speed = speed;
-								list3.Add( radar );
+                                if( gameObject != null ) {
+									Radar radar = gameObject.AddComponent<Radar>();
+									radar.speed = speed;
+									list3.Add( radar );
+								}
+                                else {
+									Debug.LogError( "\tUnable to add Radar Component to null GameObject" );
+								}
 								break;
 							}
 						case "MeshNoisemakerMount":
@@ -793,7 +858,14 @@ namespace Cold_Waters_Expanded
 									list4.Add( GetMesh( __instance, array12[1].Trim(), modelPath, assetBundle, ref bin ) );
 								}
 							}
-							activeVessel.vesselai.enemynavalguns.turrets[num13] = gameObject.transform;
+                            if( gameObject != null ) {
+								activeVessel.vesselai.enemynavalguns.turrets[countTurrets] = gameObject.transform;
+							}
+                            else {
+								gameObject = new GameObject();
+								activeVessel.vesselai.enemynavalguns.turrets[countTurrets] = gameObject.transform;
+								Debug.LogError( "\tUnable to set null GameObject as Naval Gun" );
+							}
 							break;
 						case "MeshNavalGunBarrel": {
 								Transform transform = gameObject.transform;
@@ -811,10 +883,20 @@ namespace Cold_Waters_Expanded
 										list4.Add( GetMesh( __instance, array5[1].Trim(), modelPath, assetBundle, ref bin ) );
 									}
 								}
-								gameObject.transform.SetParent( transform, false );
-								gameObject.transform.localPosition = localPosition;
-								gameObject.transform.localRotation = Quaternion.Slerp( Quaternion.identity, Quaternion.Euler( localRotation ), 1f );
-								activeVessel.vesselai.enemynavalguns.barrels[num13] = gameObject.transform;
+                                if( gameObject != null ) {
+									gameObject.transform.SetParent( transform, false );
+									gameObject.transform.localPosition = localPosition;
+									gameObject.transform.localRotation = Quaternion.Slerp( Quaternion.identity, Quaternion.Euler( localRotation ), 1f );
+									activeVessel.vesselai.enemynavalguns.barrels[countTurrets] = gameObject.transform;
+								}
+                                else {
+									gameObject = new GameObject();
+									gameObject.transform.SetParent( transform, false );
+									gameObject.transform.localPosition = localPosition;
+									gameObject.transform.localRotation = Quaternion.Slerp( Quaternion.identity, Quaternion.Euler( localRotation ), 1f );
+									activeVessel.vesselai.enemynavalguns.barrels[countTurrets] = gameObject.transform;
+									Debug.LogError( "\tUnable to set null GameObject as Naaval Gun Barrel" );
+								}
 								break;
 							}
 						case "NavalGunSpawnPosition": {
@@ -825,9 +907,9 @@ namespace Cold_Waters_Expanded
 									gameObject14.transform.localRotation = Quaternion.identity;
 								}
 								if( activeVessel.vesselai != null ) {
-									activeVessel.vesselai.enemynavalguns.muzzlePositions[num13] = gameObject14.transform;
+									activeVessel.vesselai.enemynavalguns.muzzlePositions[countTurrets] = gameObject14.transform;
 								}
-								num13++;
+								countTurrets++;
 								break;
 							}
 						case "MeshCIWSGun": {
@@ -845,6 +927,10 @@ namespace Cold_Waters_Expanded
 										list4.Add( GetMesh( __instance, array26[1].Trim(), modelPath, assetBundle, ref bin ) );
 									}
 								}
+                                if( gameObject == null ) {
+									gameObject = new GameObject();
+									Debug.LogError( "\tUnable to set null GameObject as CIWS Gun" );
+                                }
 								activeVessel.vesselai.enemymissiledefense.turrets[num10] = gameObject;
 								GameObject gameObject11 = UnityEngine.Object.Instantiate( UIFunctions.globaluifunctions.database.blankTransform, gameObject.transform.position, gameObject.transform.rotation ) as GameObject;
 								gameObject11.transform.SetParent( gameObject.transform, false );
@@ -875,8 +961,15 @@ namespace Cold_Waters_Expanded
 									list4.Add( GetMesh( __instance, array22[1].Trim(), modelPath, assetBundle, ref bin ) );
 								}
 							}
-							activeVessel.vesselai.enemymissiledefense.trackingRadars[num11] = gameObject;
-							num11++;
+                            if( gameObject != null ) {
+								activeVessel.vesselai.enemymissiledefense.trackingRadars[num11] = gameObject;
+								num11++;
+							}
+                            else {
+								activeVessel.vesselai.enemymissiledefense.trackingRadars[num11] = new GameObject();
+								num11++;
+								Debug.LogError( "\tUnable to set null GameObject as CIWS Radar" );
+							}
 							break;
 						case "MeshRBULauncher": {
 								GameObject gameObject7 = UnityEngine.Object.Instantiate( UIFunctions.globaluifunctions.database.blankTransform, meshHolder.position, Quaternion.identity ) as GameObject;
@@ -884,7 +977,7 @@ namespace Cold_Waters_Expanded
 								gameObject7.transform.localPosition = localPosition;
 								gameObject7.transform.localRotation = Quaternion.identity;
 								gameObject7.name = "rbuMount";
-								activeVessel.vesselai.enemyrbu.rbuPositions[num12] = gameObject7.transform;
+								activeVessel.vesselai.enemyrbu.rbuPositions[countASWMortar] = gameObject7.transform;
 								if( !array2[1].Trim().Contains( "," ) ) {
 									gameObject = SetupMesh( __instance, meshHolder, localPosition, localRotation, material, array2[1].Trim(), modelPath, assetBundle );
 								}
@@ -899,31 +992,35 @@ namespace Cold_Waters_Expanded
 										list4.Add( GetMesh( __instance, array17[1].Trim(), modelPath, assetBundle, ref bin ) );
 									}
 								}
+                                if( gameObject == null ) {
+									gameObject = new GameObject();
+									Debug.LogError("\tUnable to create ASW Mortar from Null GameObjcet");
+                                }
 								gameObject.transform.SetParent( gameObject7.transform, false );
 								gameObject.transform.localPosition = Vector3.zero;
 								gameObject.transform.localRotation = Quaternion.Slerp( Quaternion.identity, Quaternion.Euler( localRotation ), 1f );
-								activeVessel.vesselai.enemyrbu.rbuLaunchers[num12] = gameObject.transform;
+								activeVessel.vesselai.enemyrbu.rbuLaunchers[countASWMortar] = gameObject.transform;
 								GameObject gameObject8 = UnityEngine.Object.Instantiate( UIFunctions.globaluifunctions.database.blankTransform, meshHolder.position, Quaternion.identity ) as GameObject;
 								gameObject8.transform.SetParent( gameObject.transform, false );
 								gameObject8.transform.localPosition = Vector3.zero;
 								gameObject8.transform.localRotation = Quaternion.identity;
 								gameObject8.name = "muzzlehub";
-								activeVessel.vesselai.enemyrbu.rbuHubs[num12] = gameObject8.transform;
+								activeVessel.vesselai.enemyrbu.rbuHubs[countASWMortar] = gameObject8.transform;
 								GameObject gameObject9 = UnityEngine.Object.Instantiate( UIFunctions.globaluifunctions.database.blankTransform, meshHolder.position, Quaternion.identity ) as GameObject;
 								gameObject9.transform.SetParent( gameObject8.transform, false );
-								gameObject9.transform.localPosition = new Vector3( UIFunctions.globaluifunctions.database.databasedepthchargedata[activeVessel.databaseshipdata.rbuLauncherTypes[num12]].firingPositions.x, 0f, UIFunctions.globaluifunctions.database.databasedepthchargedata[activeVessel.databaseshipdata.rbuLauncherTypes[num12]].firingPositions.y );
+								gameObject9.transform.localPosition = new Vector3( UIFunctions.globaluifunctions.database.databasedepthchargedata[activeVessel.databaseshipdata.rbuLauncherTypes[countASWMortar]].firingPositions.x, 0f, UIFunctions.globaluifunctions.database.databasedepthchargedata[activeVessel.databaseshipdata.rbuLauncherTypes[countASWMortar]].firingPositions.y );
 								gameObject9.transform.localRotation = Quaternion.identity;
-								activeVessel.vesselai.enemyrbu.rbuLaunchPositions[num12] = gameObject9.transform;
+								activeVessel.vesselai.enemyrbu.rbuLaunchPositions[countASWMortar] = gameObject9.transform;
 								GameObject gameObject10 = UnityEngine.Object.Instantiate( UIFunctions.globaluifunctions.database.rbuLaunchFlare, gameObject8.transform.position, gameObject8.transform.rotation ) as GameObject;
 								gameObject10.transform.SetParent( gameObject8.transform );
 								gameObject10.transform.localPosition = Vector3.zero;
 								gameObject10.transform.localRotation = Quaternion.Slerp( gameObject10.transform.localRotation, Quaternion.Euler( 0f, 180f, 0f ), 1f );
-								activeVessel.vesselai.enemyrbu.rbuLaunchEffects[num12] = gameObject10.GetComponent<ParticleSystem>();
-								num12++;
+								activeVessel.vesselai.enemyrbu.rbuLaunchEffects[countASWMortar] = gameObject10.GetComponent<ParticleSystem>();
+								countASWMortar++;
 								break;
 							}
 						case "MeshRBUMount":
-							gameObject = SetupMesh( __instance, activeVessel.vesselai.enemyrbu.rbuPositions[num12 - 1], localPosition, localRotation, material, array2[1].Trim(), modelPath, assetBundle );
+							gameObject = SetupMesh( __instance, activeVessel.vesselai.enemyrbu.rbuPositions[countASWMortar - 1], localPosition, localRotation, material, array2[1].Trim(), modelPath, assetBundle );
 							break;
 						case "BowWaveParticle": {
 								try {
@@ -949,20 +1046,30 @@ namespace Cold_Waters_Expanded
 									gameObject5.layer = 28;
 								}
 								catch {
-									Debug.LogError( "\tCould not create BowWaveParticle" );
+									Debug.LogError( "\tCould not create PropWashParticle" );
 								}
 								break;
 							}
 						case "FunnelSmokeParticle": {
 								try {
-									GameObject gameObject4 = UnityEngine.Object.Instantiate( (GameObject) Resources.Load( array2[1].Trim() ), localPosition, Quaternion.identity ) as GameObject;
-									gameObject4.transform.SetParent( meshHolder.transform );
-									gameObject4.transform.localPosition = Vector3.zero;
-									gameObject4.transform.localRotation = Quaternion.identity;
-									activeVessel.damagesystem.funnelSmoke = gameObject4.GetComponent<ParticleSystem>();
+									GameObject funnelSmokeObject;
+									if( array2[1].Trim().Contains(".prefab") && assetBundle.Contains( array2[1].Trim() ) ) {
+										funnelSmokeObject = Instantiate( assetBundle.LoadAsset<GameObject>( array2[1].Trim() ) );
+                                    }
+                                    else if( array2[1].Trim().Contains( ".prefab" ) ) {
+										funnelSmokeObject = new GameObject();
+										Debug.LogError( "\tAssetBundle does not contain aset: " + array2[1].Trim() + " to use as funnel smoke." );
+                                    }
+                                    else {
+										funnelSmokeObject = UnityEngine.Object.Instantiate( (GameObject) Resources.Load( array2[1].Trim() ), localPosition, Quaternion.identity ) as GameObject;
+									}
+									funnelSmokeObject.transform.SetParent( meshHolder.transform );
+									funnelSmokeObject.transform.localPosition = Vector3.zero;
+									funnelSmokeObject.transform.localRotation = Quaternion.identity;
+									activeVessel.damagesystem.funnelSmoke = funnelSmokeObject.GetComponent<ParticleSystem>();
 								}
 								catch {
-									Debug.LogError( "\tCould not create BowWaveParticle" );
+									Debug.LogError( "\tCould not create FunnelSmokeParticle" );
 								}
 								break;
 							}
@@ -976,7 +1083,7 @@ namespace Cold_Waters_Expanded
 									gameObject3.GetComponent<AudioSource>().playOnAwake = false;
 								}
 								catch {
-									Debug.LogError( "\tCould not create BowWaveParticle" );
+									Debug.LogError( "\tCould not create EmergencyBlowParticle" );
 								}
 								break;
 							}
@@ -989,7 +1096,7 @@ namespace Cold_Waters_Expanded
 									activeVessel.vesselmovement.cavBubbles = gameObject2.GetComponent<ParticleSystem>();
 								}
 								catch {
-									Debug.LogError( "\tCould not create BowWaveParticle" );
+									Debug.LogError( "\tCould not create CavitationParticle" );
 								}
 								break;
 							}
@@ -1661,43 +1768,6 @@ namespace Cold_Waters_Expanded
 
 		}
 
-		//[HarmonyPatch( typeof( Enemy_AntiMissileGuns ), "InitialiseEnemyMissileDefense" )]
-		//public class Enemy_AntiMissileGuns_InitialiseEnemyMissileDefense_Patch
-		//{
-		//	[HarmonyPrefix]
-		//	public static bool Prefix( Enemy_AntiMissileGuns __instance ) {
-		//		__instance.gunRangeCollider.radius = __instance.parentVessel.databaseshipdata.gunRange * GameDataManager.inverseYardsScale;
-		//		__instance.tracers = new ParticleSystem[__instance.turrets.Length];
-		//		__instance.tracerPointLights = new PointLight[__instance.turrets.Length];
-		//		__instance.tracerAudios = new AudioSource[__instance.turrets.Length];
-		//		string ciwsParticle = __instance.parentVessel.databaseshipdata.ciwsParticle;
-		//		for( int i = 0; i < __instance.barrels.Length; i++ ) {
-		//			GameObject gameObject = UnityEngine.Object.Instantiate( (GameObject) Resources.Load( ciwsParticle ), __instance.barrels[i].position, __instance.barrels[i].rotation ) as GameObject;
-		//			gameObject.transform.SetParent( __instance.barrels[i] );
-		//			if( patcher.customVessels.Contains( __instance.parentVessel ) ) {
-		//				gameObject.transform.localPosition = Vector3.zero;
-		//				foreach( Transform transform in gameObject.transform ) {
-		//					transform.localPosition = Vector3.zero;
-		//				}
-		//			}
-		//			else {
-		//				gameObject.transform.localPosition = new Vector3( 0f, 0.0046f, 0.0234f );
-		//			}
-		//			gameObject.transform.localRotation = Quaternion.Slerp( Quaternion.identity, Quaternion.Euler( 90f, 0f, 0f ), 1f );
-		//			__instance.tracers[i] = gameObject.GetComponent<ParticleSystem>();
-		//			__instance.tracerPointLights[i] = gameObject.GetComponentInChildren<PointLight>();
-		//			__instance.tracerAudios[i] = gameObject.GetComponent<AudioSource>();
-		//		}
-		//		GameObject gameObject2 = UnityEngine.Object.Instantiate( UIFunctions.globaluifunctions.database.blankTransform, __instance.gameObject.transform.position, Quaternion.identity ) as GameObject;
-		//		gameObject2.transform.SetParent( __instance.parentVessel.transform, worldPositionStays: true );
-		//		gameObject2.transform.localRotation = Quaternion.identity;
-		//		gameObject2.transform.localPosition = Vector3.zero;
-		//		__instance.directionFinder = gameObject2.transform;
-		//		gameObject2.name = "Anti-Missile Direction Finder";
-		//		return false;
-		//	}
-		//}
-
 		[HarmonyPatch(typeof( TextParser ), "OpenTextDataFile")]
 		public class OpenTextDataFile_Patch
         {
@@ -2193,15 +2263,6 @@ namespace Cold_Waters_Expanded
 									}
 									vesselDict[vesselName.Split( '_' )[0]][vesselName.Split( '_' )[1]].Add( vesselName );
 								}
-
-								//Debug.Log( "\tStructured Vessel List" );
-
-								//foreach( KeyValuePair<string, Dictionary<string, List<string>>> nationDictionary in vesselDict ) {
-								//	Debug.Log( "\tNation Name: " + nationDictionary.Key );
-								//	foreach( KeyValuePair<string, List<string>> vesselTypeDictionary in nationDictionary.Value ) {
-								//		Debug.Log( "\t\tVessel Type: " + vesselTypeDictionary.Key );
-								//	}
-								//}
 
 								Debug.Log( "\tReordered Vessel List" );
 

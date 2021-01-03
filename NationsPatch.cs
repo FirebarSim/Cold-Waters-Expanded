@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Cold_Waters_Expanded
 {
-    [BepInPlugin( "org.cwe.plugins.nation", "Cold Waters Expanded Nation Patches", "1.0.1.0" )]
+    [BepInPlugin( "org.cwe.plugins.nation", "Cold Waters Expanded Nation Patches", "1.0.1.2" )]
     class NationsPatch : BaseUnityPlugin
     {
         static NationsPatch nationsPatch;
@@ -24,7 +24,7 @@ namespace Cold_Waters_Expanded
                 foreach( string path in Directory.GetFiles( Application.streamingAssetsPath + "/override/hud/flags/", "flag_*.png" ) ) {
                     nations.Add( Path.GetFileNameWithoutExtension( path ).Replace( "flag_", "" ) );
                     nationSprites.Add( CreateSprite( path ) );
-                    Debug.Log( "\tFlag added from: \\override\\hud\\\flags\\" + Path.GetFileName( path ) );
+                    Debug.Log( "\tFlag added from: \\override\\hud\\flags\\" + Path.GetFileName( path ) );
                 }
             }
         }
